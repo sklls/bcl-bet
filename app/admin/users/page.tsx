@@ -16,10 +16,9 @@ export default function AdminUsersPage() {
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [msg, setMsg] = useState('')
+  const [msgType, setMsgType] = useState<'success' | 'error'>('success')
 
   async function loadUsers() {
-    // Fetch all non-admin users via a simple supabase call
-    // We expose this through a dedicated admin route
     const res = await fetch('/api/admin/users')
     if (res.ok) setUsers(await res.json())
     setLoading(false)
@@ -42,6 +41,7 @@ export default function AdminUsersPage() {
     })
     if (res.ok) {
       setMsg(`Topped up ₹${amount} for ${selected.display_name}`)
+      setMsgType('success')
       setAmount('')
       setDescription('')
       setSelected(null)
@@ -49,6 +49,22 @@ export default function AdminUsersPage() {
     } else {
       const d = await res.json()
       setMsg(d.error ?? 'Error')
+      setMsgType('error')
+    }
+  }
+
+  async function handleReset(user: User) {
+    if (!confirm(`Reset ${user.display_name}'s wallet to ₹0? This cannot be undone.`)) return
+    setMsg('')
+    const res = await fetch(`/api/admin/users?id=${user.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setMsg(`Wallet reset to ₹0 for ${user.display_name}`)
+      setMsgType('success')
+      loadUsers()
+    } else {
+      const d = await res.json()
+      setMsg(d.error ?? 'Error resetting wallet')
+      setMsgType('error')
     }
   }
 
@@ -62,7 +78,11 @@ export default function AdminUsersPage() {
       </div>
 
       {msg && (
-        <div className="bg-green-500/10 border border-green-500/30 text-green-400 rounded-lg px-4 py-2 text-sm">{msg}</div>
+        <div className={`rounded-lg px-4 py-2 text-sm border ${
+          msgType === 'success'
+            ? 'bg-green-500/10 border-green-500/30 text-green-400'
+            : 'bg-red-500/10 border-red-500/30 text-red-400'
+        }`}>{msg}</div>
       )}
 
       {/* Top-up form */}
@@ -105,7 +125,7 @@ export default function AdminUsersPage() {
             <tr className="border-b border-gray-800 text-gray-400 text-xs uppercase">
               <th className="text-left px-4 py-3">User</th>
               <th className="text-right px-4 py-3">Balance</th>
-              <th className="text-right px-4 py-3">Action</th>
+              <th className="text-right px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -119,12 +139,20 @@ export default function AdminUsersPage() {
                   ₹{Number(u.wallet_balance).toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => { setSelected(u); setAmount(''); setDescription('') }}
-                    className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium"
-                  >
-                    Top Up
-                  </button>
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      onClick={() => { setSelected(u); setAmount(''); setDescription('') }}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-medium"
+                    >
+                      Top Up
+                    </button>
+                    <button
+                      onClick={() => handleReset(u)}
+                      className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-medium"
+                    >
+                      Reset
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

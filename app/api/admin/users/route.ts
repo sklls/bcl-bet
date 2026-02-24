@@ -23,3 +23,22 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
+
+// DELETE /api/admin/users?id=<user_id>  — resets wallet to 0
+export async function DELETE(request: Request) {
+  const admin_user = await verifyAdmin()
+  if (!admin_user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { searchParams } = new URL(request.url)
+  const userId = searchParams.get('id')
+  if (!userId) return NextResponse.json({ error: 'Missing user id' }, { status: 400 })
+
+  const admin = createAdminClient()
+  const { error } = await admin.rpc('reset_wallet', {
+    p_user_id: userId,
+    p_description: 'Wallet reset by admin',
+  })
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ success: true })
+}
