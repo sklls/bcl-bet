@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { format } from 'date-fns'
 
-type BetOption = { id: string; label: string; total_amount_bet: number }
+type Bet = { id: string; user_id: string; amount: number; status: string; placed_at: string; profiles?: { display_name: string } }
+type BetOption = { id: string; label: string; total_amount_bet: number; bets?: Bet[] }
 type Market = { id: string; market_type: string; status: string; result: string | null; bet_options: BetOption[] }
 type Match = {
   id: string
@@ -121,6 +122,42 @@ export default function AdminMatchesPage() {
     }
   }
 
+  async function deleteMatch(matchId: string, matchName: string) {
+    if (!confirm(`Delete "${matchName}"? All pending bets will be refunded and the match removed permanently.`)) return
+    const res = await fetch(`/api/admin/matches?id=${matchId}`, { method: 'DELETE' })
+    const d = await res.json()
+    if (res.ok) {
+      setMsg(`Match deleted. ${d.refunded} bet(s) refunded.`)
+      loadMatches()
+    } else {
+      setMsg(d.error ?? 'Error deleting match')
+    }
+  }
+
+  async function deleteMarket(marketId: string, marketType: string) {
+    if (!confirm(`Delete this ${marketType} market? All pending bets will be refunded.`)) return
+    const res = await fetch(`/api/admin/markets?id=${marketId}`, { method: 'DELETE' })
+    const d = await res.json()
+    if (res.ok) {
+      setMsg(`Market deleted. ${d.refunded} bet(s) refunded.`)
+      loadMatches()
+    } else {
+      setMsg(d.error ?? 'Error deleting market')
+    }
+  }
+
+  async function voidBet(betId: string, amount: number) {
+    if (!confirm(`Void this ₹${amount} bet and refund the user?`)) return
+    const res = await fetch(`/api/admin/bets?id=${betId}`, { method: 'DELETE' })
+    const d = await res.json()
+    if (res.ok) {
+      setMsg(`Bet voided. ₹${d.refunded} refunded.`)
+      loadMatches()
+    } else {
+      setMsg(d.error ?? 'Error voiding bet')
+    }
+  }
+
   async function updateMatchStatus(matchId: string, status: string) {
     // Use admin client via a simple PATCH - add this route if needed
     // For now we'll directly patch via supabase (admin panel can do this inline)
@@ -194,6 +231,12 @@ export default function AdminMatchesPage() {
                 >
                   + Market
                 </button>
+                <button
+                  onClick={() => deleteMatch(match.id, `${match.team_a} vs ${match.team_b}`)}
+                  className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-medium"
+                >
+                  🗑 Delete
+                </button>
               </div>
             </div>
 
@@ -253,28 +296,61 @@ export default function AdminMatchesPage() {
                         {market.status === 'settled' && (
                           <span className="text-xs text-gray-400">Settled: {market.result}</span>
                         )}
+                        {market.status !== 'settled' && (
+                          <button
+                            onClick={() => deleteMarket(market.id, market.market_type.replace('_', ' '))}
+                            className="px-2 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs"
+                          >
+                            🗑 Delete
+                          </button>
+                        )}
                       </div>
                     </div>
 
-                    {/* Bet options with settle buttons */}
-                    <div className="grid grid-cols-2 gap-2">
+                    {/* Bet options with settle + individual bets */}
+                    <div className="space-y-2">
                       {market.bet_options?.map((opt) => (
-                        <div key={opt.id} className="flex items-center justify-between bg-gray-700 rounded px-3 py-2">
-                          <div>
-                            <p className="text-xs text-white">{opt.label}</p>
-                            <p className="text-xs text-gray-400">₹{Number(opt.total_amount_bet).toLocaleString()} bet</p>
+                        <div key={opt.id} className="bg-gray-700 rounded p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <p className="text-xs font-medium text-white">{opt.label}</p>
+                              <p className="text-xs text-gray-400">₹{Number(opt.total_amount_bet).toLocaleString()} total</p>
+                            </div>
+                            {market.status === 'closed' && (
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Declare "${opt.label}" as winner? This will pay out all winning bets.`)) {
+                                    settleMarket(market.id, opt.id)
+                                  }
+                                }}
+                                className="text-xs px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded"
+                              >
+                                ✓ Winner
+                              </button>
+                            )}
                           </div>
-                          {market.status === 'closed' && (
-                            <button
-                              onClick={() => {
-                                if (confirm(`Declare "${opt.label}" as winner? This will pay out all winning bets.`)) {
-                                  settleMarket(market.id, opt.id)
-                                }
-                              }}
-                              className="text-xs px-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded ml-2"
-                            >
-                              Winner
-                            </button>
+                          {/* Individual bets */}
+                          {opt.bets && opt.bets.filter(b => b.status !== 'void').length > 0 && (
+                            <div className="space-y-1 mt-1 border-t border-gray-600 pt-1">
+                              {opt.bets.filter(b => b.status !== 'void').map((bet) => (
+                                <div key={bet.id} className="flex items-center justify-between text-xs">
+                                  <span className="text-gray-300">
+                                    {bet.profiles?.display_name ?? bet.user_id.slice(0, 8)} — ₹{Number(bet.amount).toLocaleString()}
+                                    <span className={`ml-1 ${bet.status === 'won' ? 'text-green-400' : bet.status === 'lost' ? 'text-red-400' : 'text-yellow-400'}`}>
+                                      ({bet.status})
+                                    </span>
+                                  </span>
+                                  {bet.status === 'pending' && (
+                                    <button
+                                      onClick={() => voidBet(bet.id, Number(bet.amount))}
+                                      className="px-1.5 py-0.5 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs ml-2"
+                                    >
+                                      Void
+                                    </button>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           )}
                         </div>
                       ))}

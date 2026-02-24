@@ -70,3 +70,40 @@ export async function PATCH(request: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
+
+// DELETE /api/admin/markets?id=<market_id>
+// Voids all pending bets (refunds users), then deletes the market + its bet_options + bets
+export async function DELETE(request: Request) {
+  const admin_user = await verifyAdmin()
+  if (!admin_user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { searchParams } = new URL(request.url)
+  const marketId = searchParams.get('id')
+  if (!marketId) return NextResponse.json({ error: 'Missing market id' }, { status: 400 })
+
+  const admin = createAdminClient()
+
+  // Refund all pending bets for this market
+  const { data: pendingBets } = await admin
+    .from('bets')
+    .select('id, user_id, amount')
+    .eq('market_id', marketId)
+    .eq('status', 'pending')
+
+  if (pendingBets && pendingBets.length > 0) {
+    for (const bet of pendingBets) {
+      await admin.rpc('topup_wallet', {
+        p_user_id: bet.user_id,
+        p_amount: bet.amount,
+        p_description: 'Refund: market deleted by admin',
+      })
+      await admin.from('bets').update({ status: 'void' }).eq('id', bet.id)
+    }
+  }
+
+  // Delete market (cascades to bet_options; bets have market_id FK but no cascade — void already)
+  const { error } = await admin.from('markets').delete().eq('id', marketId)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  return NextResponse.json({ success: true, refunded: pendingBets?.length ?? 0 })
+}
