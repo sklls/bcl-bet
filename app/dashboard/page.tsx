@@ -40,8 +40,18 @@ export default async function DashboardPage() {
       .limit(50),
   ])
 
+  const settledBets = (bets ?? []).filter((b: { status: string }) => ['won', 'lost'].includes(b.status))
   const totalWon = (bets ?? []).filter((b: { status: string }) => b.status === 'won').length
   const totalBets = (bets ?? []).length
+  const winRate = settledBets.length > 0 ? ((totalWon / settledBets.length) * 100).toFixed(0) : null
+
+  // Net profit = total won payouts - total staked on settled bets
+  const totalStaked = settledBets.reduce((s: number, b: { amount: number }) => s + Number(b.amount), 0)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const totalPayouts = settledBets.filter((b: any) => b.status === 'won').reduce((s: number, b: { payout: number }) => s + Number(b.payout ?? 0), 0)
+  const netProfit = totalPayouts - totalStaked
+  const roi = totalStaked > 0 ? ((netProfit / totalStaked) * 100).toFixed(1) : null
+
   const totalWinnings = (transactions ?? [])
     .filter((t: { type: string }) => t.type === 'win')
     .reduce((sum: number, t: { amount: number }) => sum + Number(t.amount), 0)
@@ -55,17 +65,29 @@ export default async function DashboardPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: 'Balance', value: `₹${Number(profile?.wallet_balance ?? 0).toLocaleString()}`, color: 'text-green-400' },
-          { label: 'Total Bets', value: totalBets, color: 'text-white' },
-          { label: 'Bets Won', value: totalWon, color: 'text-green-400' },
-          { label: 'Total Winnings', value: `₹${totalWinnings.toLocaleString()}`, color: 'text-yellow-400' },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <p className="text-xs text-gray-500 mb-1">{stat.label}</p>
-            <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-          </div>
-        ))}
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <p className="text-xs text-gray-500 mb-1">Balance</p>
+          <p className="text-xl font-bold text-green-400">₹{Number(profile?.wallet_balance ?? 0).toLocaleString()}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <p className="text-xs text-gray-500 mb-1">Bets</p>
+          <p className="text-xl font-bold text-white">{totalWon} / {settledBets.length}</p>
+          <p className="text-xs text-gray-600 mt-0.5">won · settled{totalBets > settledBets.length ? ` · ${totalBets - settledBets.length} pending` : ''}</p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <p className="text-xs text-gray-500 mb-1">Win Rate</p>
+          <p className={`text-xl font-bold ${winRate !== null && parseInt(winRate) >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+            {winRate !== null ? `${winRate}%` : '—'}
+          </p>
+          {winRate !== null && <p className="text-xs text-gray-600 mt-0.5">of settled bets</p>}
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+          <p className="text-xs text-gray-500 mb-1">Net Profit</p>
+          <p className={`text-xl font-bold ${netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            {netProfit >= 0 ? '+' : ''}₹{netProfit.toLocaleString()}
+          </p>
+          {roi !== null && <p className="text-xs text-gray-600 mt-0.5">ROI: {roi}%</p>}
+        </div>
       </div>
 
       {/* My Bets */}
