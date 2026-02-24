@@ -31,6 +31,11 @@ export default function AdminMatchesPage() {
   const [showCreateMarket, setShowCreateMarket] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
 
+  // Cache of team players: { [teamName]: playerName[] }
+  const [teamPlayers, setTeamPlayers] = useState<Record<string, string[]>>({})
+  // For top_scorer: track which players are checked
+  const [checkedPlayers, setCheckedPlayers] = useState<Record<string, boolean>>({})
+
   // Create match form state
   const [mForm, setMForm] = useState({
     team_a: '', team_b: '', match_date: '', venue: '', over_under_line: '', cricheroes_url: '',
@@ -70,6 +75,53 @@ export default function AdminMatchesPage() {
     } else {
       const d = await res.json()
       setMsg(d.error ?? 'Error creating match')
+    }
+  }
+
+  // Fetch players for both teams and cache them
+  async function fetchTeamPlayers(teamA: string, teamB: string) {
+    const needed = [teamA, teamB].filter(t => !teamPlayers[t])
+    if (needed.length === 0) return teamPlayers
+    const res = await fetch(`/api/admin/players?teams=${needed.join(',')}`)
+    if (!res.ok) return teamPlayers
+    const data: Record<string, string[]> = await res.json()
+    const updated = { ...teamPlayers, ...data }
+    setTeamPlayers(updated)
+    return updated
+  }
+
+  // Open market form for a match — prefetch players
+  async function openMarketForm(match: Match) {
+    const isOpen = showCreateMarket === match.id
+    if (isOpen) { setShowCreateMarket(null); return }
+    setShowCreateMarket(match.id)
+    const players = await fetchTeamPlayers(match.team_a, match.team_b)
+    // Default to winner type — prefill team names
+    const defaultOptions = `${match.team_a}\n${match.team_b}`
+    setMkForm({ market_type: 'winner', options: defaultOptions, house_edge_pct: '5' })
+    // Init all players checked
+    const allPlayers = [...(players[match.team_a] ?? []), ...(players[match.team_b] ?? [])]
+    const checked: Record<string, boolean> = {}
+    allPlayers.forEach(p => { checked[p] = true })
+    setCheckedPlayers(checked)
+  }
+
+  // When market type changes, auto-fill options
+  function handleMarketTypeChange(type: string, match: Match) {
+    setMkForm(f => ({ ...f, market_type: type }))
+    const playersA = teamPlayers[match.team_a] ?? []
+    const playersB = teamPlayers[match.team_b] ?? []
+    if (type === 'winner') {
+      setMkForm(f => ({ ...f, market_type: type, options: `${match.team_a}\n${match.team_b}` }))
+    } else if (type === 'top_scorer') {
+      // Reset all checked
+      const allPlayers = [...playersA, ...playersB]
+      const checked: Record<string, boolean> = {}
+      allPlayers.forEach(p => { checked[p] = true })
+      setCheckedPlayers(checked)
+      setMkForm(f => ({ ...f, market_type: type, options: allPlayers.join('\n') }))
+    } else {
+      setMkForm(f => ({ ...f, market_type: type, options: '' }))
     }
   }
 
@@ -226,7 +278,7 @@ export default function AdminMatchesPage() {
                   'bg-gray-600 text-gray-300'
                 }`}>{match.status}</span>
                 <button
-                  onClick={() => setShowCreateMarket(showCreateMarket === match.id ? null : match.id)}
+                  onClick={() => openMarketForm(match)}
                   className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded text-xs"
                 >
                   + Market
@@ -244,20 +296,78 @@ export default function AdminMatchesPage() {
             {showCreateMarket === match.id && (
               <form onSubmit={(e) => createMarket(match.id, e)} className="bg-gray-800 rounded-lg p-4 space-y-3">
                 <h3 className="text-sm font-semibold text-white">New Market</h3>
-                <select value={mkForm.market_type} onChange={(e) => setMkForm({ ...mkForm, market_type: e.target.value })}
-                  className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm">
+
+                {/* Market type selector */}
+                <select
+                  value={mkForm.market_type}
+                  onChange={(e) => handleMarketTypeChange(e.target.value, match)}
+                  className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm"
+                >
                   {MARKET_TYPE_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>{o.label}</option>
                   ))}
                 </select>
-                <textarea
-                  required
-                  placeholder={`Bet options (one per line)\ne.g.\n${match.team_a}\n${match.team_b}`}
-                  value={mkForm.options}
-                  onChange={(e) => setMkForm({ ...mkForm, options: e.target.value })}
-                  rows={4}
-                  className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm font-mono"
-                />
+
+                {/* Top Scorer: checkbox player list grouped by team */}
+                {mkForm.market_type === 'top_scorer' ? (
+                  <div className="space-y-2">
+                    {[match.team_a, match.team_b].map(teamName => {
+                      const players = teamPlayers[teamName] ?? []
+                      return (
+                        <div key={teamName}>
+                          <p className="text-xs font-semibold text-green-400 mb-1">{teamName}</p>
+                          <div className="grid grid-cols-2 gap-1">
+                            {players.length === 0 && (
+                              <p className="text-xs text-gray-500 col-span-2">Loading players...</p>
+                            )}
+                            {players.map(player => (
+                              <label key={player} className="flex items-center gap-2 cursor-pointer px-2 py-1 bg-gray-700 rounded hover:bg-gray-600">
+                                <input
+                                  type="checkbox"
+                                  checked={checkedPlayers[player] ?? true}
+                                  onChange={(e) => {
+                                    const updated = { ...checkedPlayers, [player]: e.target.checked }
+                                    setCheckedPlayers(updated)
+                                    // Sync options text from checked state
+                                    const allPlayers = [
+                                      ...(teamPlayers[match.team_a] ?? []),
+                                      ...(teamPlayers[match.team_b] ?? []),
+                                    ]
+                                    const selected = allPlayers.filter(p => updated[p] ?? true)
+                                    setMkForm(f => ({ ...f, options: selected.join('\n') }))
+                                  }}
+                                  className="accent-green-500"
+                                />
+                                <span className="text-xs text-white">{player}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                    <p className="text-xs text-gray-400">
+                      {mkForm.options.split('\n').filter(Boolean).length} players selected
+                    </p>
+                  </div>
+                ) : mkForm.market_type === 'winner' ? (
+                  /* Winner: show two team buttons, not editable */
+                  <div className="flex gap-2">
+                    {[match.team_a, match.team_b].map(t => (
+                      <div key={t} className="flex-1 px-3 py-2 bg-gray-700 rounded text-white text-sm text-center font-medium">{t}</div>
+                    ))}
+                  </div>
+                ) : (
+                  /* Over/Under, Live: free-text textarea */
+                  <textarea
+                    required
+                    placeholder={`Bet options (one per line)\ne.g.\nOver 142.5\nUnder 142.5`}
+                    value={mkForm.options}
+                    onChange={(e) => setMkForm({ ...mkForm, options: e.target.value })}
+                    rows={4}
+                    className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm font-mono"
+                  />
+                )}
+
                 <div className="flex items-center gap-2">
                   <label className="text-xs text-gray-400">House edge %</label>
                   <input type="number" value={mkForm.house_edge_pct} min="0" max="20"
