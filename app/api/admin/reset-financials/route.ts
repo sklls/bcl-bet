@@ -14,13 +14,14 @@ async function verifyAdmin() {
  * POST /api/admin/reset-financials
  * Body: { type: 'cash' | 'full' }
  *
- * 'cash'  — Deletes all topup transactions (resets "Total Cash Collected" counter only).
+ * 'cash'  — Deletes all positive topup transactions (resets "Total Cash Collected" to 0).
  *           Wallets and bet history are untouched.
  *
- * 'full'  — Nuclear reset:
+ * 'full'  — Nuclear reset — everything goes to 0:
  *           1. Zeros every user's wallet_balance
- *           2. Deletes ALL transactions
- *           3. Marks all pending bets as void (no refunds — balances already zeroed)
+ *           2. Deletes ALL bets (clears staked/payout/house edge totals)
+ *           3. Deletes ALL transactions
+ *           4. Resets all market pools and bet_option totals to 0
  */
 export async function POST(request: Request) {
   const admin_user = await verifyAdmin()
@@ -52,25 +53,40 @@ export async function POST(request: Request) {
     const { error: walletError } = await admin
       .from('profiles')
       .update({ wallet_balance: 0 })
-      .neq('id', '00000000-0000-0000-0000-000000000000') // match all rows
+      .neq('id', '00000000-0000-0000-0000-000000000000')
 
     if (walletError) return NextResponse.json({ error: walletError.message }, { status: 500 })
 
-    // 2. Delete ALL transactions
+    // 2. Delete ALL bets — this zeros Total Staked, Paid Out, House Edge
+    const { error: betError } = await admin
+      .from('bets')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+
+    if (betError) return NextResponse.json({ error: betError.message }, { status: 500 })
+
+    // 3. Delete ALL transactions — zeros Total Cash Collected
     const { error: txError } = await admin
       .from('transactions')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000') // match all rows
+      .neq('id', '00000000-0000-0000-0000-000000000000')
 
     if (txError) return NextResponse.json({ error: txError.message }, { status: 500 })
 
-    // 3. Void all pending bets (wallets are 0 so no refunds needed)
-    const { error: betError } = await admin
-      .from('bets')
-      .update({ status: 'void' })
-      .eq('status', 'pending')
+    // 4. Reset all market pools and bet_option totals to 0
+    const { error: marketError } = await admin
+      .from('markets')
+      .update({ total_pool: 0 })
+      .neq('id', '00000000-0000-0000-0000-000000000000')
 
-    if (betError) return NextResponse.json({ error: betError.message }, { status: 500 })
+    if (marketError) return NextResponse.json({ error: marketError.message }, { status: 500 })
+
+    const { error: optionError } = await admin
+      .from('bet_options')
+      .update({ total_amount_bet: 0 })
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+
+    if (optionError) return NextResponse.json({ error: optionError.message }, { status: 500 })
 
     return NextResponse.json({ success: true, type: 'full' })
   }
