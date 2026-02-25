@@ -70,7 +70,7 @@ export default async function AdminPage() {
       />
 
       {/* Navigation */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-3">
         <Link href="/admin/matches" className="block bg-gray-900 border border-gray-800 hover:border-green-500/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">Matches & Markets</h2>
           <p className="text-gray-400 text-sm">Create matches, open/close betting markets, declare results</p>
@@ -78,6 +78,10 @@ export default async function AdminPage() {
         <Link href="/admin/users" className="block bg-gray-900 border border-gray-800 hover:border-blue-500/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">User Wallets</h2>
           <p className="text-gray-400 text-sm">Top up user balances after cash collection</p>
+        </Link>
+        <Link href="/admin/ledger" className="block bg-gray-900 border border-gray-800 hover:border-yellow-500/50 rounded-xl p-6 transition-colors">
+          <h2 className="text-lg font-semibold mb-1">📒 Ledger</h2>
+          <p className="text-gray-400 text-sm">View all bets by all users, per-user P&L summary</p>
         </Link>
       </div>
     </div>

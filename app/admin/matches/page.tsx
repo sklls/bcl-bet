@@ -426,10 +426,10 @@ export default function AdminMatchesPage() {
                               <p className="text-xs font-medium text-white">{opt.label}</p>
                               <p className="text-xs text-gray-400">₹{Number(opt.total_amount_bet).toLocaleString()} total</p>
                             </div>
-                            {market.status === 'closed' && (
+                            {(market.status === 'closed' || market.status === 'open') && (
                               <button
                                 onClick={() => {
-                                  if (confirm(`Declare "${opt.label}" as winner? This will pay out all winning bets.`)) {
+                                  if (confirm(`Declare "${opt.label}" as winner? Betting will be closed and all winning bets paid out.`)) {
                                     settleMarket(market.id, opt.id)
                                   }
                                 }}

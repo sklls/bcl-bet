@@ -59,6 +59,7 @@ export default function Navbar() {
           {navLink('/leaderboard', 'Leaderboard')}
           {user && navLink('/dashboard', 'My Bets')}
           {user?.role === 'admin' && navLink('/admin', 'Admin')}
+          {user?.role === 'admin' && navLink('/admin/ledger', 'Ledger')}
 
           {user ? (
             <button
