@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 type Props = {
   totalCashIn: number
@@ -18,7 +17,6 @@ export default function FinancialOverview({
   houseEdge,
   houseEdgePct,
 }: Props) {
-  const router = useRouter()
   const [msg, setMsg] = useState('')
   const [msgType, setMsgType] = useState<'success' | 'error'>('success')
   const [loading, setLoading] = useState<'cash' | 'full' | null>(null)
@@ -57,7 +55,8 @@ export default function FinancialOverview({
             : '✅ Full financial reset complete. All wallets zeroed, transactions cleared.'
         )
         setMsgType('success')
-        router.refresh()
+        // Hard reload so server component re-fetches fresh data from DB
+        setTimeout(() => window.location.reload(), 800)
       } else {
         setMsg(`Error: ${data.error}`)
         setMsgType('error')
