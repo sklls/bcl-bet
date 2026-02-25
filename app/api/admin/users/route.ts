@@ -15,13 +15,40 @@ export async function GET() {
   if (!admin_user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const admin = createAdminClient()
-  const { data, error } = await admin
+
+  // Fetch all auth users (source of truth — includes users whose profile trigger may have failed)
+  const { data: authUsers, error: authError } = await admin.auth.admin.listUsers()
+  if (authError) return NextResponse.json({ error: authError.message }, { status: 500 })
+
+  // Fetch existing profiles
+  const { data: profiles, error: profileError } = await admin
     .from('profiles')
     .select('id, display_name, wallet_balance, role')
-    .order('display_name', { ascending: true })
+  if (profileError) return NextResponse.json({ error: profileError.message }, { status: 500 })
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]))
+
+  // For any auth user missing a profile row, create it now
+  const missing = (authUsers?.users ?? []).filter((u) => !profileMap.has(u.id))
+  for (const u of missing) {
+    const display_name =
+      u.user_metadata?.full_name ||
+      u.user_metadata?.name ||
+      u.email?.split('@')[0] ||
+      'User'
+    const { data: newProfile } = await admin
+      .from('profiles')
+      .insert({ id: u.id, display_name, role: 'user', wallet_balance: 0 })
+      .select('id, display_name, wallet_balance, role')
+      .single()
+    if (newProfile) profileMap.set(newProfile.id, newProfile)
+  }
+
+  const result = Array.from(profileMap.values()).sort((a, b) =>
+    a.display_name.localeCompare(b.display_name)
+  )
+
+  return NextResponse.json(result)
 }
 
 // DELETE /api/admin/users?id=<user_id>  — resets wallet to 0
