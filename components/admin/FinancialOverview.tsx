@@ -58,11 +58,11 @@ export default function FinancialOverview({
         // Hard reload so server component re-fetches fresh data from DB
         setTimeout(() => window.location.reload(), 800)
       } else {
-        setMsg(`Error: ${data.error}`)
+        setMsg(`Error: ${data.error ?? JSON.stringify(data)}`)
         setMsgType('error')
       }
-    } catch {
-      setMsg('Network error. Please try again.')
+    } catch (err) {
+      setMsg(`Network error: ${String(err)}`)
       setMsgType('error')
     } finally {
       setLoading(null)
