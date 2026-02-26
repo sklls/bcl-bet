@@ -6,7 +6,7 @@ import Navbar from '@/components/ui/Navbar'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'BCL Bet – College Cricket Betting',
+  title: 'BPL Bet – College Cricket Betting',
   description: 'Bet on your college cricket tournament matches',
 }
 

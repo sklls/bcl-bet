@@ -55,7 +55,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-gray-900 rounded-2xl p-8 shadow-xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-green-400">BCL Bet</h1>
+          <h1 className="text-3xl font-bold text-green-400">BPL Bet</h1>
           <p className="text-gray-400 mt-1">College Cricket Tournament</p>
         </div>
 

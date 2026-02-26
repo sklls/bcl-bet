@@ -94,7 +94,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">BCL Tournament</h1>
+        <h1 className="text-2xl font-bold text-white">BPL Tournament</h1>
         <p className="text-gray-400 text-sm mt-1">Place your bets on match outcomes</p>
       </div>
 
