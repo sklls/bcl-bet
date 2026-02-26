@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { data: bets }, { data: transactions }] = await Promise.all([
+  const [{ data: profile }, { data: bets }, { data: transactions }, { data: estimates }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('bets')
@@ -40,7 +40,13 @@ export default async function DashboardPage() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50),
+    // Live expected payout for each pending bet (true pari-mutuel, current pool)
+    supabase.rpc('get_bet_estimates', { p_user_id: user.id }),
   ])
+
+  // Map bet_id → current expected payout
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const estimateMap = new Map<string, number>((estimates ?? []).map((e: any) => [e.bet_id, Number(e.expected_payout)]))
 
   const settledBets = (bets ?? []).filter((b: { status: string }) => ['won', 'lost'].includes(b.status))
   const totalWon = (bets ?? []).filter((b: { status: string }) => b.status === 'won').length
@@ -100,27 +106,39 @@ export default async function DashboardPage() {
         ) : (
           <div className="space-y-2">
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {(bets ?? []).map((bet: any) => (
-              <div key={bet.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white">
-                    {bet.markets?.matches?.team_a} vs {bet.markets?.matches?.team_b}
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    {bet.bet_options?.label} · {bet.markets?.market_type?.replace('_', ' ')}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {format(new Date(bet.placed_at), 'dd MMM, h:mm a')}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-white">₹{Number(bet.amount).toLocaleString()} <span className="text-xs text-gray-500">@ {Number(bet.odds_at_placement).toFixed(2)}x</span></p>
-                  <p className={`text-sm font-semibold ${BET_STATUS_COLORS[bet.status] ?? 'text-gray-400'}`}>
-                    {bet.status === 'won' ? `+₹${Number(bet.payout).toLocaleString()}` : bet.status.toUpperCase()}
-                  </p>
-                </div>
-              </div>
-            ))}
+            {(bets ?? []).map((bet: any) => {
+                const expectedPayout = bet.status === 'pending' ? estimateMap.get(bet.id) ?? null : null
+                return (
+                  <div key={bet.id} className="bg-gray-900 border border-gray-800 rounded-lg p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-white">
+                        {bet.markets?.matches?.team_a} vs {bet.markets?.matches?.team_b}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {bet.bet_options?.label} · {bet.markets?.market_type?.replace('_', ' ')}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {format(new Date(bet.placed_at), 'dd MMM, h:mm a')}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-white">₹{Number(bet.amount).toLocaleString()} <span className="text-xs text-gray-500">@ {Number(bet.odds_at_placement).toFixed(2)}x</span></p>
+                      {bet.status === 'pending' && expectedPayout !== null ? (
+                        <div>
+                          <p className="text-xs text-yellow-400 font-medium">PENDING</p>
+                          <p className="text-xs text-gray-400">
+                            Est. return: <span className="text-yellow-300 font-semibold">₹{expectedPayout.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                          </p>
+                        </div>
+                      ) : (
+                        <p className={`text-sm font-semibold ${BET_STATUS_COLORS[bet.status] ?? 'text-gray-400'}`}>
+                          {bet.status === 'won' ? `+₹${Number(bet.payout).toLocaleString()}` : bet.status.toUpperCase()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
           </div>
         )}
       </div>
