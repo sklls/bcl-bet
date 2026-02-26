@@ -2,6 +2,8 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
 
+export const dynamic = 'force-dynamic'
+
 const BET_STATUS_COLORS: Record<string, string> = {
   pending: 'text-yellow-400',
   won: 'text-green-400',

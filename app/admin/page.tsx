@@ -2,6 +2,8 @@ import { createAdminClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import FinancialOverview from '@/components/admin/FinancialOverview'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AdminPage() {
   const admin = createAdminClient()
 

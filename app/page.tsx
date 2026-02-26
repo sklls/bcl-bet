@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { format } from 'date-fns'
 
+export const dynamic = 'force-dynamic'
+
 type Match = {
   id: string
   team_a: string

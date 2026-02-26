@@ -2,6 +2,8 @@ import { createAdminClient, createServerSupabaseClient } from '@/lib/supabase-se
 import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
 
+export const dynamic = 'force-dynamic'
+
 const STATUS_COLORS: Record<string, string> = {
   pending: 'text-yellow-400 bg-yellow-400/10',
   won:     'text-green-400 bg-green-400/10',

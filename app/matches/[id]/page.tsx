@@ -4,6 +4,8 @@ import { format } from 'date-fns'
 import MarketsSection from '@/components/betting/MarketsSection'
 import LiveScoreCard from '@/components/betting/LiveScoreCard'
 
+export const dynamic = 'force-dynamic'
+
 export default async function MatchPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient()
 
