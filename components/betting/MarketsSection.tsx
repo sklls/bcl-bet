@@ -14,6 +14,7 @@ type BetOption = {
 type Market = {
   id: string
   market_type: string
+  title: string | null
   status: string
   house_edge_pct: number
   result: string | null
@@ -25,6 +26,11 @@ const MARKET_LABELS: Record<string, string> = {
   top_scorer: 'Top Scorer',
   over_under: 'Over / Under',
   live: 'Live Market',
+}
+
+function getMarketLabel(market: Market): string {
+  if (market.market_type === 'custom' && market.title) return market.title
+  return MARKET_LABELS[market.market_type] ?? market.market_type
 }
 
 export default function MarketsSection({
@@ -79,7 +85,7 @@ export default function MarketsSection({
       {markets.map((market) => (
         <div key={market.id} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white">{MARKET_LABELS[market.market_type] ?? market.market_type}</h3>
+            <h3 className="font-semibold text-white">{getMarketLabel(market)}</h3>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
               market.status === 'open' ? 'bg-green-500/20 text-green-400' :
               market.status === 'settled' ? 'bg-gray-700 text-gray-400' :

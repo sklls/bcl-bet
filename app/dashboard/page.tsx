@@ -29,7 +29,7 @@ export default async function DashboardPage() {
       .from('bets')
       .select(`
         id, amount, odds_at_placement, status, payout, placed_at,
-        markets(market_type, result, matches(team_a, team_b)),
+        markets(market_type, title, result, matches(team_a, team_b)),
         bet_options(label)
       `)
       .eq('user_id', user.id)
@@ -115,7 +115,7 @@ export default async function DashboardPage() {
                         {bet.markets?.matches?.team_a} vs {bet.markets?.matches?.team_b}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {bet.bet_options?.label} · {bet.markets?.market_type?.replace('_', ' ')}
+                        {bet.bet_options?.label} · {bet.markets?.market_type === 'custom' && bet.markets?.title ? bet.markets.title : bet.markets?.market_type?.replace('_', ' ')}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {format(new Date(bet.placed_at), 'dd MMM, h:mm a')}

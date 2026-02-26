@@ -5,7 +5,7 @@ import { format } from 'date-fns'
 
 type Bet = { id: string; user_id: string; amount: number; status: string; placed_at: string; profiles?: { display_name: string } }
 type BetOption = { id: string; label: string; total_amount_bet: number; bets?: Bet[] }
-type Market = { id: string; market_type: string; status: string; result: string | null; bet_options: BetOption[] }
+type Market = { id: string; market_type: string; title: string | null; status: string; result: string | null; bet_options: BetOption[] }
 type Match = {
   id: string
   team_a: string
@@ -22,6 +22,7 @@ const MARKET_TYPE_OPTIONS = [
   { value: 'top_scorer', label: 'Top Scorer' },
   { value: 'over_under', label: 'Over / Under' },
   { value: 'live', label: 'Live Market' },
+  { value: 'custom', label: 'Custom (e.g. Top Wicket Taker)' },
 ]
 
 export default function AdminMatchesPage() {
@@ -43,7 +44,7 @@ export default function AdminMatchesPage() {
 
   // Create market form state
   const [mkForm, setMkForm] = useState({
-    market_type: 'winner', options: '', house_edge_pct: '5',
+    market_type: 'winner', options: '', house_edge_pct: '5', customTitle: '',
   })
 
   async function loadMatches() {
@@ -98,7 +99,7 @@ export default function AdminMatchesPage() {
     const players = await fetchTeamPlayers(match.team_a, match.team_b)
     // Default to winner type — prefill team names
     const defaultOptions = `${match.team_a}\n${match.team_b}`
-    setMkForm({ market_type: 'winner', options: defaultOptions, house_edge_pct: '5' })
+    setMkForm({ market_type: 'winner', options: defaultOptions, house_edge_pct: '5', customTitle: '' })
     // Init all players checked
     const allPlayers = [...(players[match.team_a] ?? []), ...(players[match.team_b] ?? [])]
     const checked: Record<string, boolean> = {}
@@ -121,7 +122,7 @@ export default function AdminMatchesPage() {
       setCheckedPlayers(checked)
       setMkForm(f => ({ ...f, market_type: type, options: allPlayers.join('\n') }))
     } else {
-      setMkForm(f => ({ ...f, market_type: type, options: '' }))
+      setMkForm(f => ({ ...f, market_type: type, options: '', customTitle: '' }))
     }
   }
 
@@ -135,6 +136,7 @@ export default function AdminMatchesPage() {
       body: JSON.stringify({
         match_id: matchId,
         market_type: mkForm.market_type,
+        title: mkForm.market_type === 'custom' ? mkForm.customTitle.trim() : undefined,
         options,
         house_edge_pct: parseFloat(mkForm.house_edge_pct),
       }),
@@ -356,6 +358,26 @@ export default function AdminMatchesPage() {
                       <div key={t} className="flex-1 px-3 py-2 bg-gray-700 rounded text-white text-sm text-center font-medium">{t}</div>
                     ))}
                   </div>
+                ) : mkForm.market_type === 'custom' ? (
+                  /* Custom: title input + free-text options */
+                  <div className="space-y-2">
+                    <input
+                      required
+                      placeholder="Market title (e.g. Top Wicket Taker)"
+                      value={mkForm.customTitle}
+                      onChange={(e) => setMkForm({ ...mkForm, customTitle: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <textarea
+                      required
+                      placeholder={`Bet options (one per line)\ne.g.\nAkhilesh Nalla\nSamyukth S S\nDeep Parikh`}
+                      value={mkForm.options}
+                      onChange={(e) => setMkForm({ ...mkForm, options: e.target.value })}
+                      rows={5}
+                      className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm font-mono"
+                    />
+                    <p className="text-xs text-gray-500">{mkForm.options.split('\n').filter(s => s.trim()).length} options</p>
+                  </div>
                 ) : (
                   /* Over/Under, Live: free-text textarea */
                   <textarea
@@ -388,7 +410,7 @@ export default function AdminMatchesPage() {
                   <div key={market.id} className="bg-gray-800 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-medium text-white capitalize">
-                        {market.market_type.replace('_', ' ')}
+                        {market.market_type === 'custom' && market.title ? market.title : market.market_type.replace('_', ' ')}
                       </span>
                       <div className="flex items-center gap-2">
                         {market.status !== 'settled' && (

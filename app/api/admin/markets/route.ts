@@ -4,7 +4,8 @@ import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase-se
 
 const MarketSchema = z.object({
   match_id: z.string().uuid(),
-  market_type: z.enum(['winner', 'top_scorer', 'over_under', 'live']),
+  market_type: z.enum(['winner', 'top_scorer', 'over_under', 'live', 'custom']),
+  title: z.string().min(1).max(80).optional(), // required when market_type === 'custom'
   house_edge_pct: z.number().min(0).max(20).optional(),
   options: z.array(z.string().min(1)).min(2), // labels for bet options
 })
@@ -31,13 +32,16 @@ export async function POST(request: Request) {
   const parsed = MarketSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 })
 
-  const { match_id, market_type, house_edge_pct, options } = parsed.data
+  const { match_id, market_type, title, house_edge_pct, options } = parsed.data
+  if (market_type === 'custom' && !title?.trim()) {
+    return NextResponse.json({ error: 'Title is required for custom markets' }, { status: 400 })
+  }
   const admin = createAdminClient()
 
   // Create market
   const { data: market, error: marketErr } = await admin
     .from('markets')
-    .insert({ match_id, market_type, house_edge_pct: house_edge_pct ?? 5 })
+    .insert({ match_id, market_type, title: title?.trim() ?? null, house_edge_pct: house_edge_pct ?? 5 })
     .select()
     .single()
 

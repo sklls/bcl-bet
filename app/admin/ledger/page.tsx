@@ -28,7 +28,7 @@ export default async function LedgerPage() {
     .select(`
       id, amount, odds_at_placement, status, payout, placed_at, settled_at,
       profiles(display_name),
-      markets(market_type, result, matches(team_a, team_b, match_date)),
+      markets(market_type, title, result, matches(team_a, team_b, match_date)),
       bet_options(label)
     `)
     .order('placed_at', { ascending: false })
@@ -152,7 +152,7 @@ export default async function LedgerPage() {
                   </span>
                   <span className="text-xs text-gray-500">·</span>
                   <span className="text-xs text-gray-400 capitalize">
-                    {bet.markets?.market_type?.replace('_', ' ')}
+                    {bet.markets?.market_type === 'custom' && bet.markets?.title ? bet.markets.title : bet.markets?.market_type?.replace('_', ' ')}
                   </span>
                   <span className="text-xs text-gray-500">·</span>
                   <span className="text-xs font-medium text-blue-300">{bet.bet_options?.label}</span>
