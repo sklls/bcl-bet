@@ -100,22 +100,22 @@ export default function FinancialOverview({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <p className="text-xs text-gray-500 mb-1">Total Cash Collected</p>
-          <p className="text-xl font-bold text-blue-400">₹{totalCashIn.toLocaleString()}</p>
+          <p className="text-xl font-bold text-blue-400">₹{totalCashIn.toLocaleString('en-IN')}</p>
           <p className="text-xs text-gray-600 mt-1">via top-ups</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <p className="text-xs text-gray-500 mb-1">Total Staked</p>
-          <p className="text-xl font-bold text-white">₹{totalStaked.toLocaleString()}</p>
+          <p className="text-xl font-bold text-white">₹{totalStaked.toLocaleString('en-IN')}</p>
           <p className="text-xs text-gray-600 mt-1">settled bets only</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <p className="text-xs text-gray-500 mb-1">Total Paid Out</p>
-          <p className="text-xl font-bold text-green-400">₹{totalPaidOut.toLocaleString()}</p>
+          <p className="text-xl font-bold text-green-400">₹{totalPaidOut.toLocaleString('en-IN')}</p>
           <p className="text-xs text-gray-600 mt-1">to winners</p>
         </div>
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
           <p className="text-xs text-gray-500 mb-1">House Edge Kept</p>
-          <p className="text-xl font-bold text-yellow-400">₹{houseEdge.toLocaleString()}</p>
+          <p className="text-xl font-bold text-yellow-400">₹{houseEdge.toLocaleString('en-IN')}</p>
           <p className="text-xs text-gray-600 mt-1">{houseEdgePct}% of staked</p>
         </div>
       </div>
@@ -133,8 +133,8 @@ export default function FinancialOverview({
             />
           </div>
           <div className="flex justify-between text-xs mt-2">
-            <span className="text-green-400">₹{totalPaidOut.toLocaleString()} paid out</span>
-            <span className="text-yellow-400">₹{houseEdge.toLocaleString()} house edge</span>
+            <span className="text-green-400">₹{totalPaidOut.toLocaleString('en-IN')} paid out</span>
+            <span className="text-yellow-400">₹{houseEdge.toLocaleString('en-IN')} house edge</span>
           </div>
         </div>
       )}
