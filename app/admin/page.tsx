@@ -12,37 +12,28 @@ export default async function AdminPage() {
     { count: userCount },
     { count: betCount },
     { data: openMarkets },
-    { data: houseStats },
-    { data: topupStats },
+    { data: financials },
   ] = await Promise.all([
     admin.from('matches').select('*', { count: 'exact', head: true }),
     admin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'user'),
     admin.from('bets').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     admin.from('markets').select('id').eq('status', 'open'),
-    // Settled bets: total staked vs total paid out
-    admin
-      .from('bets')
-      .select('amount, payout, status')
-      .in('status', ['won', 'lost']),
-    // Total credited via topup (cash collected)
-    admin
-      .from('transactions')
-      .select('amount')
-      .eq('type', 'topup')
-      .gt('amount', 0),
+    // Single RPC call — sums everything in Postgres, no JS row limits
+    admin.rpc('get_financial_overview'),
   ])
 
-  const totalStaked = (houseStats ?? []).reduce((s, b) => s + Number(b.amount), 0)
-  const totalPaidOut = (houseStats ?? []).reduce((s, b) => s + Number(b.payout ?? 0), 0)
-  const houseEdge = totalStaked - totalPaidOut
+  const f = financials as { total_cash_collected: number; total_staked: number; total_paid_out: number } | null
+  const totalCashIn  = Number(f?.total_cash_collected ?? 0)
+  const totalStaked  = Number(f?.total_staked ?? 0)
+  const totalPaidOut = Number(f?.total_paid_out ?? 0)
+  const houseEdge    = totalStaked - totalPaidOut
   const houseEdgePct = totalStaked > 0 ? ((houseEdge / totalStaked) * 100).toFixed(1) : '0.0'
-  const totalCashIn = (topupStats ?? []).reduce((s, t) => s + Number(t.amount), 0)
 
   const stats = [
-    { label: 'Total Matches', value: matchCount ?? 0, color: 'text-white' },
-    { label: 'Registered Users', value: userCount ?? 0, color: 'text-white' },
-    { label: 'Pending Bets', value: betCount ?? 0, color: 'text-yellow-400' },
-    { label: 'Open Markets', value: openMarkets?.length ?? 0, color: 'text-green-400' },
+    { label: 'Total Matches',    value: matchCount ?? 0,          color: 'text-white' },
+    { label: 'Registered Users', value: userCount ?? 0,           color: 'text-white' },
+    { label: 'Pending Bets',     value: betCount ?? 0,            color: 'text-yellow-400' },
+    { label: 'Open Markets',     value: openMarkets?.length ?? 0, color: 'text-green-400' },
   ]
 
   return (
