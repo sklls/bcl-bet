@@ -22,10 +22,8 @@ export default async function AdminPage() {
     admin.rpc('get_financial_overview'),
   ])
 
-  console.log('[AdminPage] financials raw:', JSON.stringify(financials))
   const row = Array.isArray(financials) ? financials[0] : financials
   const f = row as { total_cash_collected: number; total_staked: number; total_paid_out: number } | null
-  console.log('[AdminPage] f:', JSON.stringify(f))
   const totalCashIn  = Number(f?.total_cash_collected ?? 0)
   const totalStaked  = Number(f?.total_staked ?? 0)
   const totalPaidOut = Number(f?.total_paid_out ?? 0)
