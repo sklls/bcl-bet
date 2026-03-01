@@ -393,12 +393,41 @@ export default function AdminMatchesPage() {
                     />
                     {/* Player picker grouped by team */}
                     <div className="space-y-2">
-                      <p className="text-xs text-gray-400 font-semibold">Pick players from teams (optional)</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-400 font-semibold">Pick players from teams (optional)</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const allPlayers = [...(teamPlayers[match.team_a] ?? []), ...(teamPlayers[match.team_b] ?? [])]
+                            const allChecked = allPlayers.every(p => customCheckedPlayers[p])
+                            const next: Record<string, boolean> = {}
+                            allPlayers.forEach(p => { next[p] = !allChecked })
+                            setCustomCheckedPlayers(next)
+                          }}
+                          className="text-xs text-green-400 hover:text-green-300 underline"
+                        >
+                          {[...(teamPlayers[match.team_a] ?? []), ...(teamPlayers[match.team_b] ?? [])].every(p => customCheckedPlayers[p]) ? 'Deselect All' : 'Select All'}
+                        </button>
+                      </div>
                       {[match.team_a, match.team_b].map(teamName => {
                         const players = teamPlayers[teamName] ?? []
+                        const allTeamChecked = players.length > 0 && players.every(p => customCheckedPlayers[p])
                         return (
                           <div key={teamName}>
-                            <p className="text-xs font-semibold text-green-400 mb-1">{teamName}</p>
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-xs font-semibold text-green-400">{teamName}</p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const next = { ...customCheckedPlayers }
+                                  players.forEach(p => { next[p] = !allTeamChecked })
+                                  setCustomCheckedPlayers(next)
+                                }}
+                                className="text-xs text-gray-400 hover:text-gray-200 underline"
+                              >
+                                {allTeamChecked ? 'Deselect' : 'Select all'}
+                              </button>
+                            </div>
                             <div className="grid grid-cols-2 gap-1">
                               {players.length === 0 && (
                                 <p className="text-xs text-gray-500 col-span-2">No players found</p>
