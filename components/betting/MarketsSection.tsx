@@ -29,7 +29,7 @@ const MARKET_LABELS: Record<string, string> = {
 }
 
 function getMarketLabel(market: Market): string {
-  if (market.market_type === 'custom' && market.title) return market.title
+  if (market.title) return market.title
   return MARKET_LABELS[market.market_type] ?? market.market_type
 }
 

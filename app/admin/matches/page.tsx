@@ -513,7 +513,7 @@ export default function AdminMatchesPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 text-xs">{expandedMarkets.has(market.id) ? '▾' : '▸'}</span>
                         <span className="text-sm font-medium text-white capitalize">
-                          {market.market_type === 'custom' && market.title ? market.title : market.market_type.replace('_', ' ')}
+                          {market.title || market.market_type.replace('_', ' ')}
                         </span>
                         <span className="text-xs text-gray-500">
                           {market.bet_options?.length ?? 0} options · ₹{(market.bet_options ?? []).reduce((s, o) => s + Number(o.total_amount_bet), 0).toLocaleString('en-IN')} staked
