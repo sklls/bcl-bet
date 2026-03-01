@@ -87,9 +87,12 @@ export default async function HomePage() {
     .select('*, markets(id, market_type, status)')
     .order('match_date', { ascending: true })
 
+  const now = new Date()
   const live = (matches ?? []).filter((m: Match) => m.status === 'live')
-  const upcoming = (matches ?? []).filter((m: Match) => m.status === 'upcoming')
-  const completed = (matches ?? []).filter((m: Match) => m.status === 'completed')
+  const upcoming = (matches ?? []).filter((m: Match) => m.status === 'upcoming' && new Date(m.match_date) > now)
+  const completed = (matches ?? [])
+    .filter((m: Match) => m.status === 'completed' || (m.status === 'upcoming' && new Date(m.match_date) <= now))
+    .sort((a, b) => new Date(b.match_date).getTime() - new Date(a.match_date).getTime())
 
   return (
     <div className="space-y-8">
