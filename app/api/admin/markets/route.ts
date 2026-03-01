@@ -13,6 +13,7 @@ const MarketSchema = z.object({
 const UpdateMarketSchema = z.object({
   market_id: z.string().uuid(),
   status: z.enum(['open', 'closed']).optional(),
+  title: z.string().min(1).max(80).optional(),
 })
 
 async function verifyAdmin() {
@@ -63,12 +64,16 @@ export async function PATCH(request: Request) {
   const parsed = UpdateMarketSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
 
-  const { market_id, status } = parsed.data
+  const { market_id, status, title } = parsed.data
   const admin = createAdminClient()
+
+  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  if (status !== undefined) updates.status = status
+  if (title !== undefined) updates.title = title.trim()
 
   const { error } = await admin
     .from('markets')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(updates)
     .eq('id', market_id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

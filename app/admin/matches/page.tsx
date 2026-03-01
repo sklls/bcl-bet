@@ -31,6 +31,8 @@ export default function AdminMatchesPage() {
   const [showCreateMatch, setShowCreateMatch] = useState(false)
   const [showCreateMarket, setShowCreateMarket] = useState<string | null>(null)
   const [expandedMarkets, setExpandedMarkets] = useState<Set<string>>(new Set())
+  const [editingTitleId, setEditingTitleId] = useState<string | null>(null)
+  const [editingTitleValue, setEditingTitleValue] = useState('')
   const [msg, setMsg] = useState('')
 
   function toggleMarketExpand(marketId: string) {
@@ -39,6 +41,24 @@ export default function AdminMatchesPage() {
       next.has(marketId) ? next.delete(marketId) : next.add(marketId)
       return next
     })
+  }
+
+  async function saveMarketTitle(marketId: string) {
+    const title = editingTitleValue.trim()
+    if (!title) return
+    const res = await fetch('/api/admin/markets', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ market_id: marketId, title }),
+    })
+    if (res.ok) {
+      setMsg('Title updated!')
+      setEditingTitleId(null)
+      loadMatches()
+    } else {
+      const d = await res.json()
+      setMsg(d.error ?? 'Error updating title')
+    }
   }
 
   // Cache of team players: { [teamName]: playerName[] }
@@ -510,14 +530,38 @@ export default function AdminMatchesPage() {
                       className="flex items-center justify-between cursor-pointer select-none"
                       onClick={() => toggleMarketExpand(market.id)}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
                         <span className="text-gray-500 text-xs">{expandedMarkets.has(market.id) ? '▾' : '▸'}</span>
-                        <span className="text-sm font-medium text-white capitalize">
-                          {market.title || market.market_type.replace('_', ' ')}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {market.bet_options?.length ?? 0} options · ₹{(market.bet_options ?? []).reduce((s, o) => s + Number(o.total_amount_bet), 0).toLocaleString('en-IN')} staked
-                        </span>
+                        {editingTitleId === market.id ? (
+                          <div className="flex items-center gap-1 flex-1" onClick={e => e.stopPropagation()}>
+                            <input
+                              autoFocus
+                              value={editingTitleValue}
+                              onChange={e => setEditingTitleValue(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') saveMarketTitle(market.id)
+                                if (e.key === 'Escape') setEditingTitleId(null)
+                              }}
+                              className="flex-1 px-2 py-0.5 bg-gray-700 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-500"
+                            />
+                            <button onClick={() => saveMarketTitle(market.id)} className="text-xs px-2 py-0.5 bg-green-500 hover:bg-green-600 text-white rounded">Save</button>
+                            <button onClick={() => setEditingTitleId(null)} className="text-xs px-2 py-0.5 bg-gray-600 text-white rounded">✕</button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-sm font-medium text-white capitalize">
+                              {market.title || market.market_type.replace('_', ' ')}
+                            </span>
+                            <button
+                              onClick={e => { e.stopPropagation(); setEditingTitleId(market.id); setEditingTitleValue(market.title || '') }}
+                              className="text-gray-600 hover:text-gray-300 text-xs"
+                              title="Edit title"
+                            >✎</button>
+                            <span className="text-xs text-gray-500">
+                              {market.bet_options?.length ?? 0} options · ₹{(market.bet_options ?? []).reduce((s, o) => s + Number(o.total_amount_bet), 0).toLocaleString('en-IN')} staked
+                            </span>
+                          </>
+                        )}
                       </div>
                       <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                         {market.status !== 'settled' && (
