@@ -36,6 +36,10 @@ export default function AdminMatchesPage() {
   const [teamPlayers, setTeamPlayers] = useState<Record<string, string[]>>({})
   // For top_scorer: track which players are checked
   const [checkedPlayers, setCheckedPlayers] = useState<Record<string, boolean>>({})
+  // For custom: track which players are checked (unchecked by default)
+  const [customCheckedPlayers, setCustomCheckedPlayers] = useState<Record<string, boolean>>({})
+  // For custom: extra free-text options (non-player)
+  const [customExtraOptions, setCustomExtraOptions] = useState('')
 
   // Create match form state
   const [mForm, setMForm] = useState({
@@ -100,11 +104,16 @@ export default function AdminMatchesPage() {
     // Default to winner type — prefill team names
     const defaultOptions = `${match.team_a}\n${match.team_b}`
     setMkForm({ market_type: 'winner', options: defaultOptions, house_edge_pct: '5', customTitle: '' })
-    // Init all players checked
+    setCustomExtraOptions('')
+    // Init all players checked (for top_scorer)
     const allPlayers = [...(players[match.team_a] ?? []), ...(players[match.team_b] ?? [])]
     const checked: Record<string, boolean> = {}
     allPlayers.forEach(p => { checked[p] = true })
     setCheckedPlayers(checked)
+    // Init all custom players unchecked
+    const unchecked: Record<string, boolean> = {}
+    allPlayers.forEach(p => { unchecked[p] = false })
+    setCustomCheckedPlayers(unchecked)
   }
 
   // When market type changes, auto-fill options
@@ -121,6 +130,14 @@ export default function AdminMatchesPage() {
       allPlayers.forEach(p => { checked[p] = true })
       setCheckedPlayers(checked)
       setMkForm(f => ({ ...f, market_type: type, options: allPlayers.join('\n') }))
+    } else if (type === 'custom') {
+      // Reset player checkboxes (all unchecked) and extra options
+      const allPlayers = [...(playersA), ...(playersB)]
+      const unchecked: Record<string, boolean> = {}
+      allPlayers.forEach(p => { unchecked[p] = false })
+      setCustomCheckedPlayers(unchecked)
+      setCustomExtraOptions('')
+      setMkForm(f => ({ ...f, market_type: type, options: '', customTitle: '' }))
     } else {
       setMkForm(f => ({ ...f, market_type: type, options: '', customTitle: '' }))
     }
@@ -129,7 +146,13 @@ export default function AdminMatchesPage() {
   async function createMarket(matchId: string, e: React.FormEvent) {
     e.preventDefault()
     setMsg('')
-    const options = mkForm.options.split('\n').map((s) => s.trim()).filter(Boolean)
+    // For custom markets: combine checked players + extra free-text options
+    const options = mkForm.market_type === 'custom'
+      ? [
+          ...Object.entries(customCheckedPlayers).filter(([, v]) => v).map(([k]) => k),
+          ...customExtraOptions.split('\n').map(s => s.trim()).filter(Boolean),
+        ]
+      : mkForm.options.split('\n').map((s) => s.trim()).filter(Boolean)
     const res = await fetch('/api/admin/markets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -359,8 +382,8 @@ export default function AdminMatchesPage() {
                     ))}
                   </div>
                 ) : mkForm.market_type === 'custom' ? (
-                  /* Custom: title input + free-text options */
-                  <div className="space-y-2">
+                  /* Custom: title + player picker from teams + extra free-text */
+                  <div className="space-y-3">
                     <input
                       required
                       placeholder="Market title (e.g. Top Wicket Taker)"
@@ -368,15 +391,52 @@ export default function AdminMatchesPage() {
                       onChange={(e) => setMkForm({ ...mkForm, customTitle: e.target.value })}
                       className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                     />
-                    <textarea
-                      required
-                      placeholder={`Bet options (one per line)\ne.g.\nAkhilesh Nalla\nSamyukth S S\nDeep Parikh`}
-                      value={mkForm.options}
-                      onChange={(e) => setMkForm({ ...mkForm, options: e.target.value })}
-                      rows={5}
-                      className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm font-mono"
-                    />
-                    <p className="text-xs text-gray-500">{mkForm.options.split('\n').filter(s => s.trim()).length} options</p>
+                    {/* Player picker grouped by team */}
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-400 font-semibold">Pick players from teams (optional)</p>
+                      {[match.team_a, match.team_b].map(teamName => {
+                        const players = teamPlayers[teamName] ?? []
+                        return (
+                          <div key={teamName}>
+                            <p className="text-xs font-semibold text-green-400 mb-1">{teamName}</p>
+                            <div className="grid grid-cols-2 gap-1">
+                              {players.length === 0 && (
+                                <p className="text-xs text-gray-500 col-span-2">No players found</p>
+                              )}
+                              {players.map(player => (
+                                <label key={player} className="flex items-center gap-2 cursor-pointer px-2 py-1 bg-gray-700 rounded hover:bg-gray-600">
+                                  <input
+                                    type="checkbox"
+                                    checked={customCheckedPlayers[player] ?? false}
+                                    onChange={(e) => {
+                                      setCustomCheckedPlayers(prev => ({ ...prev, [player]: e.target.checked }))
+                                    }}
+                                    className="accent-green-500"
+                                  />
+                                  <span className="text-xs text-white">{player}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    {/* Extra free-text options */}
+                    <div>
+                      <p className="text-xs text-gray-400 font-semibold mb-1">Additional options (one per line)</p>
+                      <textarea
+                        placeholder={`e.g.\nAny other name\nSome Team`}
+                        value={customExtraOptions}
+                        onChange={(e) => setCustomExtraOptions(e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 bg-gray-700 rounded text-white text-sm font-mono"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {Object.values(customCheckedPlayers).filter(Boolean).length} players +{' '}
+                      {customExtraOptions.split('\n').filter(s => s.trim()).length} extra ={' '}
+                      {Object.values(customCheckedPlayers).filter(Boolean).length + customExtraOptions.split('\n').filter(s => s.trim()).length} total options
+                    </p>
                   </div>
                 ) : (
                   /* Over/Under, Live: free-text textarea */
