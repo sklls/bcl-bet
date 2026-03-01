@@ -27,7 +27,7 @@ export async function GET() {
   const admin = createAdminClient()
   const { data, error } = await admin
     .from('matches')
-    .select('*, markets(id, market_type, status, result, bet_options(id, label, total_amount_bet, bets(id, user_id, amount, status, placed_at, profiles(display_name))))')
+    .select('*, markets(id, market_type, title, status, result, bet_options(id, label, total_amount_bet, bets(id, user_id, amount, status, placed_at, profiles(display_name))))')
     .order('match_date', { ascending: false })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
