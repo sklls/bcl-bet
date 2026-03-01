@@ -93,7 +93,7 @@ export default function MarketsSection({
     <div className="space-y-3">
       {markets.map((market) => {
         const isOpen = market.status === 'open'
-        const isExpanded = expandedMarkets.has(market.id) || isOpen
+        const isExpanded = expandedMarkets.has(market.id)
 
         return (
         <div key={market.id} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
