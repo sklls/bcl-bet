@@ -30,7 +30,16 @@ export default function AdminMatchesPage() {
   const [loading, setLoading] = useState(true)
   const [showCreateMatch, setShowCreateMatch] = useState(false)
   const [showCreateMarket, setShowCreateMarket] = useState<string | null>(null)
+  const [expandedMarkets, setExpandedMarkets] = useState<Set<string>>(new Set())
   const [msg, setMsg] = useState('')
+
+  function toggleMarketExpand(marketId: string) {
+    setExpandedMarkets(prev => {
+      const next = new Set(prev)
+      next.has(marketId) ? next.delete(marketId) : next.add(marketId)
+      return next
+    })
+  }
 
   // Cache of team players: { [teamName]: playerName[] }
   const [teamPlayers, setTeamPlayers] = useState<Record<string, string[]>>({})
@@ -497,11 +506,20 @@ export default function AdminMatchesPage() {
               <div className="space-y-3">
                 {match.markets.map((market) => (
                   <div key={market.id} className="bg-gray-800 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium text-white capitalize">
-                        {market.market_type === 'custom' && market.title ? market.title : market.market_type.replace('_', ' ')}
-                      </span>
+                    <div
+                      className="flex items-center justify-between cursor-pointer select-none"
+                      onClick={() => toggleMarketExpand(market.id)}
+                    >
                       <div className="flex items-center gap-2">
+                        <span className="text-gray-500 text-xs">{expandedMarkets.has(market.id) ? '▾' : '▸'}</span>
+                        <span className="text-sm font-medium text-white capitalize">
+                          {market.market_type === 'custom' && market.title ? market.title : market.market_type.replace('_', ' ')}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {market.bet_options?.length ?? 0} options · ₹{(market.bet_options ?? []).reduce((s, o) => s + Number(o.total_amount_bet), 0).toLocaleString('en-IN')} staked
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                         {market.status !== 'settled' && (
                           <button
                             onClick={() => toggleMarket(market.id, market.status)}
@@ -528,8 +546,8 @@ export default function AdminMatchesPage() {
                       </div>
                     </div>
 
-                    {/* Bet options with settle + individual bets */}
-                    <div className="space-y-2">
+                    {/* Bet options with settle + individual bets — collapsible */}
+                    {expandedMarkets.has(market.id) && <div className="space-y-2 mt-3">
                       {market.bet_options?.map((opt) => (
                         <div key={opt.id} className="bg-gray-700 rounded p-3">
                           <div className="flex items-center justify-between mb-2">
@@ -575,7 +593,7 @@ export default function AdminMatchesPage() {
                           )}
                         </div>
                       ))}
-                    </div>
+                    </div>}
                   </div>
                 ))}
               </div>
