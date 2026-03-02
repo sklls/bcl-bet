@@ -12,21 +12,22 @@ export default async function AdminPage() {
     { count: userCount },
     { count: betCount },
     { data: openMarkets },
-    { data: financials },
+    { data: topups },
+    { data: settledBets },
+    { data: winTransactions },
   ] = await Promise.all([
     admin.from('matches').select('*', { count: 'exact', head: true }),
     admin.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'user'),
     admin.from('bets').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     admin.from('markets').select('id').eq('status', 'open'),
-    // Single RPC call — sums everything in Postgres, no JS row limits
-    admin.rpc('get_financial_overview'),
+    admin.from('transactions').select('amount').eq('type', 'topup').limit(10000),
+    admin.from('bets').select('amount').in('status', ['won', 'lost']).limit(10000),
+    admin.from('transactions').select('amount').eq('type', 'win').limit(10000),
   ])
 
-  const row = Array.isArray(financials) ? financials[0] : financials
-  const f = row as { total_cash_collected: number; total_staked: number; total_paid_out: number } | null
-  const totalCashIn  = Number(f?.total_cash_collected ?? 0)
-  const totalStaked  = Number(f?.total_staked ?? 0)
-  const totalPaidOut = Number(f?.total_paid_out ?? 0)
+  const totalCashIn  = (topups ?? []).reduce((s, r) => s + Number(r.amount), 0)
+  const totalStaked  = (settledBets ?? []).reduce((s, r) => s + Number(r.amount), 0)
+  const totalPaidOut = (winTransactions ?? []).reduce((s, r) => s + Number(r.amount), 0)
   const houseEdge    = totalStaked - totalPaidOut
   const houseEdgePct = totalStaked > 0 ? ((houseEdge / totalStaked) * 100).toFixed(1) : '0.0'
 
