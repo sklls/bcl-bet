@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   for (const bet of (bets ?? [])) {
     const uid = bet.user_id
-    const name = (bet.profiles as { display_name: string } | null)?.display_name ?? 'Unknown'
+    const name = (bet.profiles as unknown as { display_name: string } | null)?.display_name ?? 'Unknown'
     if (!playerMap[uid]) {
       playerMap[uid] = { display_name: name, total_staked: 0, total_winnings: 0, total_bets: 0, bets_won: 0 }
     }
