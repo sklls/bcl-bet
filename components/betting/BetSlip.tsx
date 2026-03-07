@@ -19,12 +19,14 @@ export default function BetSlip({
   market,
   selectedOption,
   userBalance,
+  marketCreatedAt,
   onClose,
   onSuccess,
 }: {
   market: Market
   selectedOption: BetOption
   userBalance: number | null
+  marketCreatedAt?: string
   onClose: () => void
   onSuccess: () => void
 }) {
@@ -33,6 +35,10 @@ export default function BetSlip({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [confirmed, setConfirmed] = useState(false)
+
+  const isEarlyBird = marketCreatedAt
+    ? new Date() < new Date(new Date(marketCreatedAt).getTime() + 30 * 60 * 1000)
+    : false
 
   useEffect(() => {
     const num = parseFloat(amount)
@@ -88,6 +94,13 @@ export default function BetSlip({
 
   return (
     <div className="space-y-3">
+      {isEarlyBird && (
+        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2 text-xs text-yellow-400 flex items-center gap-2">
+          <span>⚡</span>
+          <span>Early bird! Bet now for a <strong>+10% bonus</strong> on your payout.</span>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-400">
           Backing: <span className="text-white font-medium">{selectedOption.label}</span>
