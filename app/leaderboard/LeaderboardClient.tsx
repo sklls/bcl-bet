@@ -36,17 +36,36 @@ const rankMedal = (idx: number) =>
   idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`
 
 export default function LeaderboardClient({
-  matches,
+  matches: initialMatches,
   overall,
 }: {
   matches: Match[]
   overall: OverallPlayer[]
 }) {
   const [tab, setTab] = useState<'match' | 'overall'>('overall')
-  const [selectedMatchId, setSelectedMatchId] = useState(matches[0]?.id ?? '')
+  const [liveMatches, setLiveMatches] = useState<Match[]>(initialMatches)
+  const [selectedMatchId, setSelectedMatchId] = useState(initialMatches[0]?.id ?? '')
   const [matchPlayers, setMatchPlayers] = useState<MatchPlayer[]>([])
   const [loading, setLoading] = useState(false)
 
+  // Fetch fresh matches list from API whenever By Match tab is opened
+  useEffect(() => {
+    if (tab !== 'match') return
+    fetch('/api/matches')
+      .then(r => r.json())
+      .then((data: Match[]) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setLiveMatches(data)
+          // If current selection is no longer valid, select the first match
+          if (!data.find(m => m.id === selectedMatchId)) {
+            setSelectedMatchId(data[0].id)
+          }
+        }
+      })
+      .catch(() => {})
+  }, [tab])
+
+  // Fetch match leaderboard data
   useEffect(() => {
     if (tab !== 'match' || !selectedMatchId) return
     setLoading(true)
@@ -57,7 +76,7 @@ export default function LeaderboardClient({
       .catch(() => setLoading(false))
   }, [tab, selectedMatchId])
 
-  const selectedMatch = matches.find(m => m.id === selectedMatchId)
+  const selectedMatch = liveMatches.find(m => m.id === selectedMatchId)
 
   return (
     <div className="space-y-6">
@@ -145,7 +164,7 @@ export default function LeaderboardClient({
             onChange={e => setSelectedMatchId(e.target.value)}
             className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-green-500 transition-colors"
           >
-            {matches.map(m => (
+            {liveMatches.map(m => (
               <option key={m.id} value={m.id}>
                 {m.team_a} vs {m.team_b} — {format(new Date(m.match_date), 'dd MMM yyyy')}
                 {m.status === 'live' ? ' 🔴 LIVE' : m.status === 'completed' ? ' ✅' : ''}
