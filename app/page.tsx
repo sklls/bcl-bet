@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { format } from 'date-fns'
+import AdBanner from '@/components/ui/AdBanner'
 
 export const dynamic = 'force-dynamic'
 
@@ -110,6 +111,8 @@ export default async function HomePage() {
         </section>
       )}
 
+      <AdBanner />
+
       {upcoming.length > 0 && (
         <section>
           <h2 className="text-lg font-semibold text-[#F07820] mb-3">Upcoming</h2>
@@ -118,6 +121,8 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      <AdBanner />
 
       {completed.length > 0 && (
         <section>
