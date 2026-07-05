@@ -38,20 +38,20 @@ export default function LiveScoreCard({
   }, [matchId])
 
   return (
-    <div className="bg-red-900/20 border border-red-500/30 rounded-xl p-4">
+    <div className="bg-[#C41E28]/20 border border-[#C41E28]/30 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-3">
-        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-        <span className="text-red-400 text-xs font-semibold">LIVE SCORE</span>
-        <span className="text-xs text-gray-500 ml-auto">Updates every ~60s</span>
+        <span className="w-2 h-2 bg-[#C41E28] rounded-full animate-pulse" />
+        <span className="text-[#C41E28] text-xs font-semibold">LIVE SCORE</span>
+        <span className="text-xs text-[#5a7099] ml-auto">Updates every ~60s</span>
       </div>
       <div className="flex justify-around">
         <div className="text-center">
-          <p className="text-sm text-gray-400">{teamA}</p>
+          <p className="text-sm text-[#7a91c4]">{teamA}</p>
           <p className="text-xl font-bold text-white font-mono">{scoreA ?? '—'}</p>
         </div>
-        <div className="text-gray-600 self-center">|</div>
+        <div className="text-[#243568] self-center">|</div>
         <div className="text-center">
-          <p className="text-sm text-gray-400">{teamB}</p>
+          <p className="text-sm text-[#7a91c4]">{teamB}</p>
           <p className="text-xl font-bold text-white font-mono">{scoreB ?? '—'}</p>
         </div>
       </div>

@@ -39,7 +39,7 @@ export default function Navbar() {
       key={href}
       href={href}
       className={`text-sm font-medium transition-colors ${
-        pathname === href ? 'text-green-400' : 'text-gray-400 hover:text-white'
+        pathname === href ? 'text-[#F07820]' : 'text-[#7a91c4] hover:text-white'
       }`}
     >
       {label}
@@ -47,9 +47,9 @@ export default function Navbar() {
   )
 
   return (
-    <nav className="border-b border-gray-800 bg-gray-950 sticky top-0 z-50">
+    <nav className="border-b border-[#243568] bg-[#0D1730] sticky top-0 z-50">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="text-green-400 font-bold text-lg tracking-tight">
+        <Link href="/" className="text-[#F07820] font-bold text-lg tracking-tight">
           BPL Bet
         </Link>
 
@@ -64,7 +64,7 @@ export default function Navbar() {
           {user ? (
             <button
               onClick={handleSignOut}
-              className="text-sm text-gray-400 hover:text-red-400 transition-colors"
+              className="text-sm text-[#7a91c4] hover:text-[#C41E28] transition-colors"
             >
               Sign Out
             </button>

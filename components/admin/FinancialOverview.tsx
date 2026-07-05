@@ -55,7 +55,6 @@ export default function FinancialOverview({
             : '✅ Full financial reset complete. All wallets zeroed, transactions cleared.'
         )
         setMsgType('success')
-        // Hard reload so server component re-fetches fresh data from DB
         setTimeout(() => window.location.reload(), 800)
       } else {
         setMsg(`Error: ${data.error ?? JSON.stringify(data)}`)
@@ -77,14 +76,14 @@ export default function FinancialOverview({
           <button
             onClick={() => handleReset('cash')}
             disabled={loading !== null}
-            className="px-3 py-1.5 text-xs font-medium bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 text-xs font-medium bg-[#1E2E52] hover:bg-[#243568] text-[#7a91c4] border border-[#243568] rounded-lg transition-colors disabled:opacity-50"
           >
             {loading === 'cash' ? 'Resetting…' : 'Reset Cash Counter'}
           </button>
           <button
             onClick={() => handleReset('full')}
             disabled={loading !== null}
-            className="px-3 py-1.5 text-xs font-medium bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 text-xs font-medium bg-[#C41E28]/10 hover:bg-[#C41E28]/20 text-[#C41E28] border border-[#C41E28]/30 rounded-lg transition-colors disabled:opacity-50"
           >
             {loading === 'full' ? 'Resetting…' : '🗑 Full Reset'}
           </button>
@@ -92,57 +91,56 @@ export default function FinancialOverview({
       </div>
 
       {msg && (
-        <p className={`text-sm mb-3 px-3 py-2 rounded-lg ${msgType === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+        <p className={`text-sm mb-3 px-3 py-2 rounded-lg ${msgType === 'success' ? 'bg-[#F07820]/10 text-[#F07820]' : 'bg-[#C41E28]/10 text-[#C41E28]'}`}>
           {msg}
         </p>
       )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Total Cash Collected</p>
-          <p className="text-xl font-bold text-blue-400">₹{totalCashIn.toLocaleString('en-IN')}</p>
-          <p className="text-xs text-gray-600 mt-1">via top-ups</p>
+        <div className="bg-[#162244] border border-[#243568] rounded-xl p-4">
+          <p className="text-xs text-[#5a7099] mb-1">Total Cash Collected</p>
+          <p className="text-xl font-bold text-[#7a91c4]">₹{totalCashIn.toLocaleString('en-IN')}</p>
+          <p className="text-xs text-[#5a7099] mt-1">via top-ups</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Total Staked</p>
+        <div className="bg-[#162244] border border-[#243568] rounded-xl p-4">
+          <p className="text-xs text-[#5a7099] mb-1">Total Staked</p>
           <p className="text-xl font-bold text-white">₹{totalStaked.toLocaleString('en-IN')}</p>
-          <p className="text-xs text-gray-600 mt-1">settled bets only</p>
+          <p className="text-xs text-[#5a7099] mt-1">settled bets only</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Total Paid Out</p>
-          <p className="text-xl font-bold text-green-400">₹{totalPaidOut.toLocaleString('en-IN')}</p>
-          <p className="text-xs text-gray-600 mt-1">to winners</p>
+        <div className="bg-[#162244] border border-[#243568] rounded-xl p-4">
+          <p className="text-xs text-[#5a7099] mb-1">Total Paid Out</p>
+          <p className="text-xl font-bold text-[#F07820]">₹{totalPaidOut.toLocaleString('en-IN')}</p>
+          <p className="text-xs text-[#5a7099] mt-1">to winners</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">House Edge Kept</p>
+        <div className="bg-[#162244] border border-[#243568] rounded-xl p-4">
+          <p className="text-xs text-[#5a7099] mb-1">House Edge Kept</p>
           <p className="text-xl font-bold text-yellow-400">₹{houseEdge.toLocaleString('en-IN')}</p>
-          <p className="text-xs text-gray-600 mt-1">{houseEdgePct}% of staked</p>
+          <p className="text-xs text-[#5a7099] mt-1">{houseEdgePct}% of staked</p>
         </div>
       </div>
 
       {totalStaked > 0 && (
-        <div className="mt-4 bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <div className="flex justify-between text-xs text-gray-400 mb-2">
+        <div className="mt-4 bg-[#162244] border border-[#243568] rounded-xl p-4">
+          <div className="flex justify-between text-xs text-[#7a91c4] mb-2">
             <span>Payout Rate</span>
             <span>{(100 - parseFloat(houseEdgePct)).toFixed(1)}% paid out · {houseEdgePct}% kept</span>
           </div>
-          <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+          <div className="w-full bg-[#243568] rounded-full h-3 overflow-hidden">
             <div
-              className="h-3 bg-green-500 rounded-full"
+              className="h-3 bg-[#F07820] rounded-full"
               style={{ width: `${Math.max(0, 100 - parseFloat(houseEdgePct))}%` }}
             />
           </div>
           <div className="flex justify-between text-xs mt-2">
-            <span className="text-green-400">₹{totalPaidOut.toLocaleString('en-IN')} paid out</span>
+            <span className="text-[#F07820]">₹{totalPaidOut.toLocaleString('en-IN')} paid out</span>
             <span className="text-yellow-400">₹{houseEdge.toLocaleString('en-IN')} house edge</span>
           </div>
         </div>
       )}
 
-      {/* Legend */}
-      <div className="mt-3 text-xs text-gray-600 space-y-0.5">
-        <p><span className="text-blue-400">Reset Cash Counter</span> — clears top-up records only. Wallets &amp; bets untouched.</p>
-        <p><span className="text-red-400">Full Reset</span> — zeros all wallets, deletes all transactions, voids pending bets.</p>
+      <div className="mt-3 text-xs text-[#5a7099] space-y-0.5">
+        <p><span className="text-[#7a91c4]">Reset Cash Counter</span> — clears top-up records only. Wallets &amp; bets untouched.</p>
+        <p><span className="text-[#C41E28]">Full Reset</span> — zeros all wallets, deletes all transactions, voids pending bets.</p>
       </div>
     </div>
   )

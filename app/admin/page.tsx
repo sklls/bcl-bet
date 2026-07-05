@@ -35,27 +35,25 @@ export default async function AdminPage() {
     { label: 'Total Matches',    value: matchCount ?? 0,          color: 'text-white' },
     { label: 'Registered Users', value: userCount ?? 0,           color: 'text-white' },
     { label: 'Pending Bets',     value: betCount ?? 0,            color: 'text-yellow-400' },
-    { label: 'Open Markets',     value: openMarkets?.length ?? 0, color: 'text-green-400' },
+    { label: 'Open Markets',     value: openMarkets?.length ?? 0, color: 'text-[#F07820]' },
   ]
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Admin Panel</h1>
-        <p className="text-gray-400 text-sm mt-1">Manage matches, markets, and users</p>
+        <p className="text-[#7a91c4] text-sm mt-1">Manage matches, markets, and users</p>
       </div>
 
-      {/* Core Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {stats.map((s) => (
-          <div key={s.label} className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-            <p className="text-xs text-gray-500 mb-1">{s.label}</p>
+          <div key={s.label} className="bg-[#162244] border border-[#243568] rounded-xl p-4">
+            <p className="text-xs text-[#5a7099] mb-1">{s.label}</p>
             <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Financial Overview — client component (has reset buttons) */}
       <FinancialOverview
         totalCashIn={totalCashIn}
         totalStaked={totalStaked}
@@ -64,19 +62,18 @@ export default async function AdminPage() {
         houseEdgePct={houseEdgePct}
       />
 
-      {/* Navigation */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Link href="/admin/matches" className="block bg-gray-900 border border-gray-800 hover:border-green-500/50 rounded-xl p-6 transition-colors">
-          <h2 className="text-lg font-semibold mb-1">Matches & Markets</h2>
-          <p className="text-gray-400 text-sm">Create matches, open/close betting markets, declare results</p>
+        <Link href="/admin/matches" className="block bg-[#162244] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-colors">
+          <h2 className="text-lg font-semibold mb-1">Matches &amp; Markets</h2>
+          <p className="text-[#7a91c4] text-sm">Create matches, open/close betting markets, declare results</p>
         </Link>
-        <Link href="/admin/users" className="block bg-gray-900 border border-gray-800 hover:border-blue-500/50 rounded-xl p-6 transition-colors">
+        <Link href="/admin/users" className="block bg-[#162244] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">User Wallets</h2>
-          <p className="text-gray-400 text-sm">Top up user balances after cash collection</p>
+          <p className="text-[#7a91c4] text-sm">Top up user balances after cash collection</p>
         </Link>
-        <Link href="/admin/ledger" className="block bg-gray-900 border border-gray-800 hover:border-yellow-500/50 rounded-xl p-6 transition-colors">
+        <Link href="/admin/ledger" className="block bg-[#162244] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">📒 Ledger</h2>
-          <p className="text-gray-400 text-sm">View all bets by all users, per-user P&L summary</p>
+          <p className="text-[#7a91c4] text-sm">View all bets by all users, per-user P&L summary</p>
         </Link>
       </div>
     </div>

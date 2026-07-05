@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${inter.className} bg-gray-950 text-white min-h-screen`}>
+      <body className={`${inter.className} bg-[#0D1730] text-white min-h-screen`}>
         <Navbar />
         <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>
       </body>
