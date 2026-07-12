@@ -19,41 +19,57 @@ export default function FinancialOverview({
 }: Props) {
   const [msg, setMsg] = useState('')
   const [msgType, setMsgType] = useState<'success' | 'error'>('success')
-  const [loading, setLoading] = useState<'cash' | 'full' | null>(null)
+  const [loading, setLoading] = useState<'cash' | 'season' | null>(null)
 
-  async function handleReset(type: 'cash' | 'full') {
-    const confirmMsg =
-      type === 'cash'
-        ? 'Reset "Total Cash Collected" to ₹0?\n\nThis deletes all top-up transaction records. Wallets and bet history are NOT affected.'
-        : '⚠️ FULL FINANCIAL RESET ⚠️\n\nThis will:\n• Zero ALL user wallets\n• Delete ALL transactions\n• Void all pending bets\n\nThis CANNOT be undone. Type RESET to confirm.'
+  async function handleReset(type: 'cash' | 'season') {
+    if (type === 'cash') {
+      if (!window.confirm(
+        'Reset "Total Cash Collected" to ₹0?\n\nThis deletes all top-up transaction records. Wallets and bet history are NOT affected.'
+      )) return
 
-    if (type === 'full') {
-      const input = window.prompt(confirmMsg)
-      if (input !== 'RESET') {
-        setMsg('Reset cancelled.')
+      setLoading('cash')
+      setMsg('')
+      try {
+        const res = await fetch('/api/admin/reset-financials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'cash' }),
+        })
+        const data = await res.json()
+        if (res.ok) {
+          setMsg('✅ Cash collected counter reset to ₹0.')
+          setMsgType('success')
+          setTimeout(() => window.location.reload(), 800)
+        } else {
+          setMsg(`Error: ${data.error ?? JSON.stringify(data)}`)
+          setMsgType('error')
+        }
+      } catch (err) {
+        setMsg(`Network error: ${String(err)}`)
         setMsgType('error')
-        return
+      } finally {
+        setLoading(null)
       }
-    } else {
-      if (!window.confirm(confirmMsg)) return
+      return
     }
 
-    setLoading(type)
-    setMsg('')
+    // Season reset
+    const input = window.prompt(
+      '⚠️ SEASON RESET ⚠️\n\nThis will:\n• Delete ALL matches, markets, bets\n• Delete ALL teams\n• Zero ALL user wallets\n• Delete ALL transactions\n\nThis CANNOT be undone. Type RESET SEASON to confirm.'
+    )
+    if (input !== 'RESET SEASON') {
+      setMsg('Reset cancelled.')
+      setMsgType('error')
+      return
+    }
 
+    setLoading('season')
+    setMsg('')
     try {
-      const res = await fetch('/api/admin/reset-financials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type }),
-      })
+      const res = await fetch('/api/admin/reset-season', { method: 'POST' })
       const data = await res.json()
       if (res.ok) {
-        setMsg(
-          type === 'cash'
-            ? '✅ Cash collected counter reset to ₹0.'
-            : '✅ Full financial reset complete. All wallets zeroed, transactions cleared.'
-        )
+        setMsg('✅ Season reset complete. All matches, teams, and transactions cleared.')
         setMsgType('success')
         setTimeout(() => window.location.reload(), 800)
       } else {
@@ -81,11 +97,11 @@ export default function FinancialOverview({
             {loading === 'cash' ? 'Resetting…' : 'Reset Cash Counter'}
           </button>
           <button
-            onClick={() => handleReset('full')}
+            onClick={() => handleReset('season')}
             disabled={loading !== null}
             className="px-3 py-1.5 text-xs font-medium bg-[#C41E28]/10 hover:bg-[#C41E28]/20 text-[#C41E28] border border-[#C41E28]/30 rounded-lg transition-colors disabled:opacity-50"
           >
-            {loading === 'full' ? 'Resetting…' : '🗑 Full Reset'}
+            {loading === 'season' ? 'Resetting…' : '🔄 Season Reset'}
           </button>
         </div>
       </div>
@@ -140,7 +156,7 @@ export default function FinancialOverview({
 
       <div className="mt-3 text-xs text-[#5a7099] space-y-0.5">
         <p><span className="text-[#7a91c4]">Reset Cash Counter</span> — clears top-up records only. Wallets &amp; bets untouched.</p>
-        <p><span className="text-[#C41E28]">Full Reset</span> — zeros all wallets, deletes all transactions, voids pending bets.</p>
+        <p><span className="text-[#C41E28]">Season Reset</span> — deletes all matches, teams, transactions; zeros all wallets.</p>
       </div>
     </div>
   )
