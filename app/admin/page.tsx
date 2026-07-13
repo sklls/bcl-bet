@@ -62,10 +62,14 @@ export default async function AdminPage() {
         houseEdgePct={houseEdgePct}
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link href="/admin/matches" className="block bg-[#162244] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">Matches &amp; Markets</h2>
           <p className="text-[#7a91c4] text-sm">Create matches, open/close betting markets, declare results</p>
+        </Link>
+        <Link href="/admin/teams" className="block bg-[#162244] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-colors">
+          <h2 className="text-lg font-semibold mb-1">⚽ Teams</h2>
+          <p className="text-[#7a91c4] text-sm">Register teams per sport before creating matches</p>
         </Link>
         <Link href="/admin/users" className="block bg-[#162244] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">User Wallets</h2>
@@ -73,7 +77,7 @@ export default async function AdminPage() {
         </Link>
         <Link href="/admin/ledger" className="block bg-[#162244] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">📒 Ledger</h2>
-          <p className="text-[#7a91c4] text-sm">View all bets by all users, per-user P&L summary</p>
+          <p className="text-[#7a91c4] text-sm">View all bets by all users, per-user P&amp;L summary</p>
         </Link>
       </div>
     </div>
