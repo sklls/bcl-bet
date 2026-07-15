@@ -111,20 +111,20 @@ export default function MarketsSection({
         const marketBettors = bettors[market.id] ?? {}
 
         return (
-        <div key={market.id} className="bg-[#162244] border border-[#243568] rounded-xl overflow-hidden">
+        <div key={market.id} className="bg-table border border-rail rounded-xl overflow-hidden">
           <div
             className="flex items-center justify-between px-5 py-4 cursor-pointer select-none"
             onClick={() => toggleExpand(market.id)}
           >
             <div className="flex items-center gap-2">
-              <span className="text-[#5a7099] text-xs">{isExpanded ? '▾' : '▸'}</span>
+              <span className="text-slate text-xs">{isExpanded ? '▾' : '▸'}</span>
               <h3 className="font-semibold text-white">{getMarketLabel(market)}</h3>
-              <span className="text-xs text-[#5a7099]">{market.bet_options.length} options</span>
+              <span className="text-xs text-slate">{market.bet_options.length} options</span>
             </div>
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              market.status === 'open' ? 'bg-[#F07820]/20 text-[#F07820]' :
-              market.status === 'settled' ? 'bg-[#243568] text-[#7a91c4]' :
-              'bg-yellow-500/20 text-yellow-400'
+              market.status === 'open' ? 'bg-amber/20 text-amber' :
+              market.status === 'settled' ? 'bg-rail text-slate' :
+              'bg-gold/20 text-gold'
             }`}>
               {market.status === 'open' ? 'Betting Open' :
                market.status === 'settled' ? `Settled: ${market.result}` : 'Closed'}
@@ -146,29 +146,29 @@ export default function MarketsSection({
                       disabled={market.status !== 'open'}
                       onClick={(e) => { e.stopPropagation(); setSelectedOption(isSelected ? null : { marketId: market.id, option }) }}
                       className={`rounded-lg p-3 border text-left transition-all ${
-                        isWinner ? 'border-[#F07820] bg-[#F07820]/10' :
-                        isSelected ? 'border-[#F07820] bg-[#F07820]/10' :
+                        isWinner ? 'border-amber bg-amber/10' :
+                        isSelected ? 'border-amber bg-amber/10' :
                         market.status === 'open'
-                          ? 'border-[#243568] hover:border-[#F07820]/50 bg-[#1E2E52]'
-                          : 'border-[#243568] bg-[#1E2E52]/50 opacity-60 cursor-not-allowed'
+                          ? 'border-rail hover:border-amber/50 bg-raised'
+                          : 'border-rail bg-raised/50 opacity-60 cursor-not-allowed'
                       }`}
                     >
                       <p className="text-sm font-medium text-white truncate">{option.label}</p>
-                      <p className={`text-lg font-bold mt-0.5 ${isWinner ? 'text-[#F07820]' : 'text-yellow-400'}`}>
+                      <p className={`text-lg font-bold mt-0.5 ${isWinner ? 'text-amber' : 'text-gold'}`}>
                         {formatOdds(odds)}
                       </p>
-                      <p className="text-xs text-[#5a7099] mt-0.5">
+                      <p className="text-xs text-slate mt-0.5">
                         Pool: ₹{Number(option.total_amount_bet).toLocaleString('en-IN')}
                       </p>
                       {optionBettors.length > 0 && (
-                        <div className="mt-1.5 pt-1.5 border-t border-[#243568]/50 flex flex-wrap gap-x-1.5 gap-y-0.5">
+                        <div className="mt-1.5 pt-1.5 border-t border-rail/50 flex flex-wrap gap-x-1.5 gap-y-0.5">
                           {optionBettors.slice(0, 4).map((b, i) => (
-                            <span key={i} className={`text-[10px] ${b.early ? 'text-yellow-400' : 'text-[#5a7099]'}`}>
+                            <span key={i} className={`text-[10px] ${b.early ? 'text-gold' : 'text-slate'}`}>
                               {b.early ? '⚡' : ''}{b.name.split(' ')[0]}
                             </span>
                           ))}
                           {optionBettors.length > 4 && (
-                            <span className="text-[10px] text-[#5a7099]">+{optionBettors.length - 4}</span>
+                            <span className="text-[10px] text-slate">+{optionBettors.length - 4}</span>
                           )}
                         </div>
                       )}
@@ -178,7 +178,7 @@ export default function MarketsSection({
               </div>
 
               {selectedOption?.marketId === market.id && (
-                <div className="mt-4 pt-4 border-t border-[#243568]">
+                <div className="mt-4 pt-4 border-t border-rail">
                   <BetSlip
                     market={market}
                     selectedOption={selectedOption.option}
@@ -199,7 +199,7 @@ export default function MarketsSection({
       })}
 
       {markets.length === 0 && (
-        <p className="text-[#5a7099] text-center py-8">No betting markets available for this match.</p>
+        <p className="text-slate text-center py-8">No betting markets available for this match.</p>
       )}
     </div>
   )

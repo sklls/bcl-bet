@@ -33,6 +33,16 @@ export function createServerSupabaseClient() {
   )
 }
 
+// Anon, cookie-less client for public reads (no auth, no next/headers).
+// Safe to use in statically-rendered / ISR pages that only read public data.
+export function createPublicClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
+
 export function createAdminClient() {
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

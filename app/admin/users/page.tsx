@@ -68,30 +68,30 @@ export default function AdminUsersPage() {
     }
   }
 
-  if (loading) return <div className="text-gray-400 py-10 text-center">Loading...</div>
+  if (loading) return <div className="text-slate py-10 text-center">Loading...</div>
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">User Wallets</h1>
-        <p className="text-gray-400 text-sm mt-1">Top up user balances after receiving cash</p>
+        <p className="text-slate text-sm mt-1">Top up user balances after receiving cash</p>
       </div>
 
       {msg && (
         <div className={`rounded-lg px-4 py-2 text-sm border ${
           msgType === 'success'
             ? 'bg-green-500/10 border-green-500/30 text-green-400'
-            : 'bg-red-500/10 border-red-500/30 text-red-400'
+            : 'bg-crimson/10 border-crimson/30 text-crimson-light'
         }`}>{msg}</div>
       )}
 
       {/* Top-up form */}
       {selected && (
-        <form onSubmit={handleTopup} className="bg-gray-900 border border-green-500/30 rounded-xl p-5 space-y-3">
+        <form onSubmit={handleTopup} className="bg-table border border-green-500/30 rounded-xl p-5 space-y-3">
           <h2 className="font-semibold text-white">
             Top up: <span className="text-green-400">{selected.display_name}</span>
           </h2>
-          <p className="text-sm text-gray-400">Current balance: ₹{Number(selected.wallet_balance).toLocaleString()}</p>
+          <p className="text-sm text-slate">Current balance: ₹{Number(selected.wallet_balance).toLocaleString()}</p>
           <input
             required
             type="number"
@@ -99,19 +99,19 @@ export default function AdminUsersPage() {
             placeholder="Amount (₹)"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 bg-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <input
             placeholder="Note (e.g. Cash received 24 Feb)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-3 py-2 bg-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <div className="flex gap-2">
             <button type="submit" className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
               Add ₹{amount || '0'} to Wallet
             </button>
-            <button type="button" onClick={() => setSelected(null)} className="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm">
+            <button type="button" onClick={() => setSelected(null)} className="px-4 py-2 bg-raised text-white rounded-lg text-sm">
               Cancel
             </button>
           </div>
@@ -119,10 +119,10 @@ export default function AdminUsersPage() {
       )}
 
       {/* Users table */}
-      <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-table border border-rail rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-800 text-gray-400 text-xs uppercase">
+            <tr className="border-b border-rail text-slate text-xs uppercase">
               <th className="text-left px-4 py-3">User</th>
               <th className="text-right px-4 py-3">Balance</th>
               <th className="text-right px-4 py-3">Actions</th>
@@ -130,10 +130,10 @@ export default function AdminUsersPage() {
           </thead>
           <tbody>
             {users.map((u) => (
-              <tr key={u.id} className="border-b border-gray-800/50">
+              <tr key={u.id} className="border-b border-rail/50">
                 <td className="px-4 py-3">
                   <p className="font-medium text-white">{u.display_name}</p>
-                  <p className="text-xs text-gray-500 capitalize">{u.role}</p>
+                  <p className="text-xs text-slate capitalize">{u.role}</p>
                 </td>
                 <td className="px-4 py-3 text-right font-semibold text-green-400">
                   ₹{Number(u.wallet_balance).toLocaleString()}
@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
                     </button>
                     <button
                       onClick={() => handleReset(u)}
-                      className="px-3 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded text-xs font-medium"
+                      className="px-3 py-1 bg-crimson/20 hover:bg-crimson/40 text-crimson-light rounded text-xs font-medium"
                     >
                       Reset
                     </button>
@@ -159,7 +159,7 @@ export default function AdminUsersPage() {
           </tbody>
         </table>
         {users.length === 0 && (
-          <p className="text-center text-gray-500 py-10">No users registered yet.</p>
+          <p className="text-center text-slate py-10">No users registered yet.</p>
         )}
       </div>
     </div>

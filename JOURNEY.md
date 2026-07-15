@@ -1,4 +1,4 @@
-# BPL Bet — The Full Journey
+# PrimeStake — The Full Journey
 
 A detailed account of how this platform was conceived, built, broken, fixed, and evolved from a blank Next.js repo into a fully functioning cricket betting system for the BCL tournament.
 

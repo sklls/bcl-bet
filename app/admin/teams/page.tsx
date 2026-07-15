@@ -55,11 +55,11 @@ export default function AdminTeamsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-white">Manage Teams</h1>
-        <p className="text-[#7a91c4] text-sm mt-1">Add teams per sport before creating matches</p>
+        <p className="text-slate text-sm mt-1">Add teams per sport before creating matches</p>
       </div>
 
       {msg && (
-        <p className="text-sm px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded-lg text-[#7a91c4]">
+        <p className="text-sm px-3 py-2 bg-raised border border-rail rounded-lg text-slate">
           {msg}
         </p>
       )}
@@ -72,8 +72,8 @@ export default function AdminTeamsPage() {
             onClick={() => { setActiveSport(sport); setMsg('') }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               activeSport === sport
-                ? 'bg-[#F07820] text-white'
-                : 'bg-[#162244] text-[#7a91c4] border border-[#243568] hover:border-[#F07820]/50'
+                ? 'bg-amber text-white'
+                : 'bg-table text-slate border border-rail hover:border-amber/50'
             }`}
           >
             {SPORTS[sport].emoji} {SPORTS[sport].label}
@@ -88,12 +88,12 @@ export default function AdminTeamsPage() {
           value={newName}
           onChange={e => setNewName(e.target.value)}
           placeholder={`New ${SPORTS[activeSport].label} team name`}
-          className="flex-1 px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+          className="flex-1 px-3 py-2 bg-raised border border-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber"
         />
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-[#F07820] hover:bg-[#D96A18] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          className="px-4 py-2 bg-amber hover:bg-amber-deep text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
         >
           + Add
         </button>
@@ -102,19 +102,19 @@ export default function AdminTeamsPage() {
       {/* Teams list */}
       <div className="space-y-2">
         {teams.length === 0 ? (
-          <p className="text-[#5a7099] text-sm py-6 text-center">
+          <p className="text-slate text-sm py-6 text-center">
             No {SPORTS[activeSport].label} teams yet. Add one above.
           </p>
         ) : (
           teams.map(team => (
             <div
               key={team.id}
-              className="flex items-center justify-between bg-[#162244] border border-[#243568] rounded-lg px-4 py-3"
+              className="flex items-center justify-between bg-table border border-rail rounded-lg px-4 py-3"
             >
               <span className="text-white text-sm font-medium">{team.name}</span>
               <button
                 onClick={() => deleteTeam(team.id, team.name)}
-                className="text-xs px-2 py-1 bg-[#C41E28]/10 hover:bg-[#C41E28]/20 text-[#C41E28] rounded transition-colors"
+                className="text-xs px-2 py-1 bg-crimson/10 hover:bg-crimson/20 text-crimson-light rounded transition-colors"
               >
                 Delete
               </button>

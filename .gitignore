@@ -34,3 +34,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
+.env*
+
+# local dev helper scripts & junk (not for deploy)
+/nul
+/check-db.mjs
+/check-tx.mjs
+/create-rpc.mjs
+/supabase/.temp/
+
+# impeccable per-session cache (regenerated locally)
+.impeccable/hook.cache.json

@@ -1,6 +1,8 @@
-# BCL Bet — Project Documentation
+# PrimeStake — Project Documentation
 
-> **BCL Bet** is a pari-mutuel cricket tournament betting app built for the Bengaluru Cricket League (BCL). It allows participants to bet virtual currency on match outcomes, top scorers, and live events. Admins manage matches, markets, and wallets; users browse, bet, and track their results.
+> *Luck is for the Unprepared.*
+
+> **PrimeStake** is a pari-mutuel, multi-sport tournament betting app built for the Bengaluru Cricket League (BCL). It allows participants to bet virtual currency on match outcomes, top scorers, and live events. Admins manage matches, markets, and wallets; users browse, bet, and track their results.
 
 **Live URL:** https://bcl-bet-app-1.vercel.app
 **Repository:** https://github.com/sklls/bcl-bet
@@ -32,7 +34,7 @@
 
 ## 1. Project Overview
 
-BCL Bet is a **closed betting platform** for a college cricket tournament. Real money is collected physically by admins, who then top-up user wallets on the platform. Users bet their virtual balance on match markets. Winners are credited automatically when a market is settled.
+PrimeStake is a **closed betting platform** for a college cricket tournament. Real money is collected physically by admins, who then top-up user wallets on the platform. Users bet their virtual balance on match markets. Winners are credited automatically when a market is settled.
 
 ### Key Features
 
@@ -601,7 +603,7 @@ UPDATE profiles SET role = 'admin' WHERE id = 'your-user-uuid';
 
 ## 11. Odds Calculation
 
-BCL Bet uses **pari-mutuel odds** — odds are pool-based, not set by a bookmaker.
+PrimeStake uses **pari-mutuel odds** — odds are pool-based, not set by a bookmaker.
 
 ### Formula
 
@@ -841,4 +843,4 @@ export function createAdminClient() { ... }
 
 ---
 
-*Documentation generated for BCL Bet v1.0 — February 2026*
+*Documentation generated for PrimeStake v1.0 — February 2026*

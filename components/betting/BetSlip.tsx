@@ -84,7 +84,7 @@ export default function BetSlip({
 
   if (confirmed) {
     return (
-      <div className="text-center py-4 text-[#F07820] font-semibold">
+      <div className="text-center py-4 text-amber font-semibold">
         Bet placed successfully!
       </div>
     )
@@ -95,18 +95,18 @@ export default function BetSlip({
   return (
     <div className="space-y-3">
       {isEarlyBird && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-2 text-xs text-yellow-400 flex items-center gap-2">
+        <div className="bg-gold/10 border border-gold/30 rounded-lg px-3 py-2 text-xs text-gold flex items-center gap-2">
           <span>⚡</span>
           <span>Early bird! Bet now for a <strong>+10% bonus</strong> on your payout.</span>
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-[#7a91c4]">
+        <p className="text-sm text-slate">
           Backing: <span className="text-white font-medium">{selectedOption.label}</span>
         </p>
         {userBalance !== null && (
-          <p className="text-xs text-[#5a7099]">Balance: ₹{userBalance.toLocaleString()}</p>
+          <p className="text-xs text-slate">Balance: ₹{userBalance.toLocaleString()}</p>
         )}
       </div>
 
@@ -115,7 +115,7 @@ export default function BetSlip({
           <button
             key={q}
             onClick={() => setAmount(String(q))}
-            className="flex-1 py-1 text-xs bg-[#1E2E52] hover:bg-[#243568] rounded text-[#7a91c4] transition-colors"
+            className="flex-1 py-1 text-xs bg-raised hover:bg-rail rounded text-slate transition-colors"
           >
             ₹{q}
           </button>
@@ -129,40 +129,40 @@ export default function BetSlip({
           placeholder="Enter amount (₹)"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="flex-1 px-3 py-2 bg-[#0D1730] border border-[#243568] rounded-lg text-white placeholder-[#5a7099] focus:outline-none focus:ring-2 focus:ring-[#F07820] text-sm"
+          className="flex-1 px-3 py-2 bg-baize border border-rail rounded-lg text-white placeholder-slate-faded focus:outline-none focus:ring-2 focus:ring-amber text-sm"
         />
       </div>
 
       {previewOdds !== null && parseFloat(amount) > 0 && (
-        <div className="bg-[#0D1730] rounded-lg p-3 text-sm space-y-1">
-          <div className="flex justify-between text-[#7a91c4]">
+        <div className="bg-baize rounded-lg p-3 text-sm space-y-1">
+          <div className="flex justify-between text-slate">
             <span>Odds</span>
-            <span className="text-yellow-400 font-bold">{formatOdds(previewOdds)}</span>
+            <span className="text-gold font-bold">{formatOdds(previewOdds)}</span>
           </div>
-          <div className="flex justify-between text-[#7a91c4]">
+          <div className="flex justify-between text-slate">
             <span>Stake</span>
             <span>₹{parseFloat(amount).toLocaleString()}</span>
           </div>
-          <div className="flex justify-between font-semibold text-white border-t border-[#243568] pt-1 mt-1">
+          <div className="flex justify-between font-semibold text-white border-t border-rail pt-1 mt-1">
             <span>Potential return</span>
-            <span className="text-[#F07820]">₹{calcPayout(parseFloat(amount), previewOdds).toLocaleString()}</span>
+            <span className="text-amber">₹{calcPayout(parseFloat(amount), previewOdds).toLocaleString()}</span>
           </div>
         </div>
       )}
 
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-crimson-light text-sm">{error}</p>}
 
       <div className="flex gap-2">
         <button
           onClick={onClose}
-          className="flex-1 py-2 bg-[#1E2E52] hover:bg-[#243568] text-[#7a91c4] rounded-lg text-sm transition-colors"
+          className="flex-1 py-2 bg-raised hover:bg-rail text-slate rounded-lg text-sm transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={handlePlaceBet}
           disabled={loading || !amount || parseFloat(amount) <= 0}
-          className="flex-1 py-2 bg-[#F07820] hover:bg-[#D96A18] disabled:opacity-50 text-white font-semibold rounded-lg text-sm transition-colors"
+          className="flex-1 py-2 bg-amber hover:bg-amber-deep disabled:opacity-50 text-white font-semibold rounded-lg text-sm transition-colors"
         >
           {loading ? 'Placing...' : 'Confirm Bet'}
         </button>

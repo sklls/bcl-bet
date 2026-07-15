@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-15T00:00:00Z",
+  "title": "Design System: PrimeStake",
+  "extensions": {
+    "colorMeta": {
+      "signal-amber": { "role": "primary", "displayName": "Signal Amber", "canonical": "#F07820", "tonalRamp": ["#3a1c07", "#5c2c0a", "#7d3c0d", "#a04e11", "#c26016", "#F07820", "#f4934c", "#f8b681", "#fbd9b8"] },
+      "burnt-amber": { "role": "primary", "displayName": "Burnt Amber", "canonical": "#D96A18", "tonalRamp": ["#351a06", "#54290a", "#73380d", "#914611", "#b05615", "#D96A18", "#e58f4f", "#efb488", "#f7dac2"] },
+      "odds-gold": { "role": "secondary", "displayName": "Odds Gold", "canonical": "#FACC15", "tonalRamp": ["#3d3105", "#615009", "#86700d", "#aa8f11", "#cfae14", "#FACC15", "#fbd952", "#fce68f", "#fef3cc"] },
+      "live-crimson": { "role": "tertiary", "displayName": "Live Crimson", "canonical": "#C41E28", "tonalRamp": ["#30080a", "#4d0c10", "#6a1015", "#87141b", "#a41821", "#C41E28", "#dc4e57", "#e98a90", "#f5c6c9"] },
+      "midnight-baize": { "role": "neutral", "displayName": "Midnight Baize", "canonical": "#0D1730", "tonalRamp": ["#0D1730", "#152040", "#1d2b52", "#263666", "#31447d", "#41568f", "#5a70a8", "#8fa0c6", "#c7d0e5"] },
+      "table-navy": { "role": "neutral", "displayName": "Table Navy", "canonical": "#162244", "tonalRamp": ["#0b1122", "#111a35", "#162244", "#1f2f5c", "#293d74", "#35508f", "#5470b0", "#8ea3ce", "#c8d3e8"] },
+      "raised-navy": { "role": "neutral", "displayName": "Raised Navy", "canonical": "#1E2E52", "tonalRamp": ["#0f172a", "#16223d", "#1E2E52", "#283c6b", "#334b85", "#43609f", "#6080bd", "#96abd6", "#cddaee"] },
+      "rail-blue": { "role": "neutral", "displayName": "Rail Blue", "canonical": "#243568", "tonalRamp": ["#111832", "#1a2649", "#243568", "#2f4585", "#3c579f", "#5470b8", "#7791cf", "#a4b8e0", "#d3ddf1"] },
+      "muted-slate": { "role": "neutral", "displayName": "Muted Slate", "canonical": "#7A91C4", "tonalRamp": ["#1f2a44", "#31405f", "#43567c", "#566c99", "#6a80b3", "#7A91C4", "#9aacd3", "#bcc8e2", "#dde4f1"] },
+      "ink-white": { "role": "neutral", "displayName": "Ink White", "canonical": "#FFFFFF", "tonalRamp": ["#4a4a4a", "#666666", "#828282", "#9e9e9e", "#bababa", "#d6d6d6", "#e8e8e8", "#f4f4f4", "#FFFFFF"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page titles only — one per screen." },
+      "title": { "displayName": "Title", "purpose": "Card/section headings, market names, the live-odds figure." },
+      "body": { "displayName": "Body", "purpose": "Default running text and most labels." },
+      "label": { "displayName": "Label", "purpose": "Meta text, status chips, quick-amount chips." }
+    },
+    "shadows": [
+      { "name": "none", "value": "none", "purpose": "This system has no drop shadows. Elevation is tonal layering plus a 1px Rail Blue hairline." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for color/state transitions (transition-colors, transition-all)." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover, selection, and focus feedback on tiles and buttons." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single most important action on a view (Confirm Bet, Sign In). Amber fill, tactile hover.",
+      "html": "<button class=\"ds-btn-primary\">Confirm Bet</button>",
+      "css": ".ds-btn-primary { background: #F07820; color: #fff; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; transition: background 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: #D96A18; } .ds-btn-primary:focus-visible { outline: 2px solid #F07820; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Cancel and low-stakes actions, always paired beside a primary. Raised-navy fill.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: #1E2E52; color: #7A91C4; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; transition: background 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-secondary:hover { background: #243568; } .ds-btn-secondary:focus-visible { outline: 2px solid #F07820; outline-offset: 2px; }"
+    },
+    {
+      "name": "Bet Tile",
+      "kind": "custom",
+      "refersTo": "bet-tile",
+      "description": "The core pressable option in a bet-market grid. Shows label, live odds, pool. States: hover, selected, disabled.",
+      "html": "<button class=\"ds-bet-tile\"><span class=\"ds-bet-label\">Team Alpha</span><span class=\"ds-bet-odds\">2.45x</span><span class=\"ds-bet-pool\">Pool: ₹12,400</span></button>",
+      "css": ".ds-bet-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; width: 100%; background: #1E2E52; border: 1px solid #243568; border-radius: 8px; padding: 12px; cursor: pointer; transition: border-color 150ms cubic-bezier(0.4,0,0.2,1), background 150ms cubic-bezier(0.4,0,0.2,1); } .ds-bet-tile:hover { border-color: rgba(240,120,32,0.5); } .ds-bet-tile[aria-pressed=\"true\"] { border-color: #F07820; background: rgba(240,120,32,0.1); } .ds-bet-tile:disabled { opacity: 0.6; cursor: not-allowed; } .ds-bet-label { font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; color: #fff; } .ds-bet-odds { font-family: Inter, system-ui, sans-serif; font-size: 1.125rem; font-weight: 700; color: #FACC15; font-variant-numeric: tabular-nums; } .ds-bet-pool { font-family: Inter, system-ui, sans-serif; font-size: 0.75rem; color: #7A91C4; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Amount Input",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Stake entry. Sits below its surface on the Midnight Baize base with an amber focus ring.",
+      "html": "<input class=\"ds-input\" type=\"number\" placeholder=\"Enter amount (₹)\" />",
+      "css": ".ds-input { width: 100%; background: #0D1730; color: #fff; font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; padding: 8px 12px; border: 1px solid #243568; border-radius: 8px; font-variant-numeric: tabular-nums; } .ds-input::placeholder { color: #7A91C4; } .ds-input:focus { outline: none; box-shadow: 0 0 0 2px #F07820; }"
+    },
+    {
+      "name": "Status Chip (Open)",
+      "kind": "chip",
+      "refersTo": "status-chip",
+      "description": "Market state pill. Tinted background at ~20% of the state color over its own text color; never a solid fill.",
+      "html": "<span class=\"ds-chip-open\">Betting Open</span>",
+      "css": ".ds-chip-open { display: inline-block; font-family: Inter, system-ui, sans-serif; font-size: 0.75rem; font-weight: 500; color: #F07820; background: rgba(240,120,32,0.2); padding: 2px 8px; border-radius: 9999px; }"
+    },
+    {
+      "name": "Market Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The market container. Table Navy surface, 1px Rail Blue border, no shadow.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Match Winner</h3><p class=\"ds-card-meta\">3 options</p></div>",
+      "css": ".ds-card { background: #162244; border: 1px solid #243568; border-radius: 12px; padding: 20px; } .ds-card-title { font-family: Inter, system-ui, sans-serif; font-size: 1.125rem; font-weight: 700; color: #fff; margin: 0; } .ds-card-meta { font-family: Inter, system-ui, sans-serif; font-size: 0.75rem; color: #7A91C4; margin: 4px 0 0; }"
+    },
+    {
+      "name": "Top Navigation",
+      "kind": "nav",
+      "refersTo": "navbar",
+      "description": "Sticky top bar. Midnight Baize fill, Rail Blue bottom hairline, amber wordmark and active link.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-brand\" href=\"#\">PrimeStake</a><div class=\"ds-nav-links\"><a class=\"ds-nav-link ds-active\" href=\"#\">Sports</a><a class=\"ds-nav-link\" href=\"#\">Leaderboard</a><a class=\"ds-nav-link\" href=\"#\">My Bets</a></div></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; justify-content: space-between; height: 56px; padding: 0 16px; background: #0D1730; border-bottom: 1px solid #243568; } .ds-nav-brand { font-family: Inter, system-ui, sans-serif; font-weight: 700; font-size: 1.125rem; letter-spacing: -0.01em; color: #F07820; text-decoration: none; } .ds-nav-links { display: flex; align-items: center; gap: 24px; } .ds-nav-link { font-family: Inter, system-ui, sans-serif; font-size: 0.875rem; font-weight: 500; color: #7A91C4; text-decoration: none; transition: color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-nav-link:hover { color: #fff; } .ds-nav-link.ds-active { color: #F07820; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Private Book",
+    "overview": "PrimeStake looks like an exclusive members' sportsbook, not a public gambling site. The surface is a deep, near-black navy — the baize of a card table under low light — and every screen is built from tonal layers of that same blue rather than from shadows. Amber is the house signal: it marks what's live, what's selected, and what pays, used sparingly so it reads as premium instead of loud. The system carries the live-odds density of a real book with the composed darkness of a modern trading surface and the mobile-first polish of a top gaming app, while refusing the excesses of all three. This is a play-money app that must earn real trust, so it behaves like a ledger: precise numbers, quiet confidence, tactile and confident interactions, and energy that comes from live state rather than manufactured urgency.",
+    "keyCharacteristics": [
+      "Deep-navy tonal layering, no decorative shadows — depth from four shades of one blue.",
+      "Amber as a rationed signal color, never a background wash.",
+      "Data-forward density kept legible through hierarchy, not clutter.",
+      "Tactile, confident interactions with clear hover/selected/disabled states.",
+      "Mobile-first: two-column bet grids, generous tap targets, one-handed reach."
+    ],
+    "rules": [
+      { "name": "The Rationed Amber Rule", "body": "Signal Amber covers a small fraction of any screen — the one primary action plus live/selected signals. Never a section background, never a fill behind text, never decorative.", "section": "colors" },
+      { "name": "The One-Blue Rule", "body": "Every surface is a shade of the Midnight Baize family (#0D1730 → #162244 → #1E2E52 → #243568). Depth steps through these four in order. Do not introduce a fifth neutral or a grey.", "section": "colors" },
+      { "name": "The Tabular Numerals Rule", "body": "Every figure that changes or is compared — odds, stake, pool, payout, balance, P&L — uses tabular numerals so columns align and a ticking value doesn't reflow its neighbors.", "section": "typography" },
+      { "name": "The No-Shadow Rule", "body": "Elevation is color, not shadow. A card earns separation from a lighter tonal step and a 1px hairline. If a surface needs a shadow to be legible, widen the tonal step instead.", "section": "elevation" },
+      { "name": "The Amber-Glow Exception", "body": "The only permitted 'lift' is state: a selected bet tile or focused input gains an amber border or ring, and a selected tile a faint amber tint. A signal of interaction, not a shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do build every surface from the four-step navy family (#0D1730 → #162244 → #1E2E52 → #243568) and separate layers with a 1px #243568 hairline.",
+      "Do ration Signal Amber (#F07820) to the one primary action plus live/selected signals — treat its scarcity as the source of its authority.",
+      "Do render every odds, stake, pool, payout, and balance figure in tabular numerals so columns align and ticking values don't reflow.",
+      "Do give bet tiles, buttons, and inputs unmistakable hover / selected / focus / disabled states.",
+      "Do design mobile-first: 2-column bet grids, ≥44px tap targets, one-handed reach, and a reduced-motion fallback for live/pulsing states.",
+      "Do keep all non-white text at Muted Slate (#7A91C4) or brighter — the single secondary tier; never introduce a dimmer slate for meta."
+    ],
+    "donts": [
+      "Don't ship a sketchy or spammy gambling look — no seedy neon-casino glow, flashing jackpots, fake 'you won!' urgency, or offshore-bookie styling.",
+      "Don't let it look cheap or toy-like — no clip-art, no default-framework buttons, no play-money-demo feel.",
+      "Don't create a cluttered wall of tiny blinking numbers — density is earned through hierarchy.",
+      "Don't drift into generic AI SaaS — no purple gradients, no gradient text, no interchangeable rounded-card template.",
+      "Don't add drop shadows to convey elevation — widen the tonal step instead.",
+      "Don't use Signal Amber as a background wash, a section fill, or a fill behind body text.",
+      "Don't introduce a fifth neutral or a plain grey — the book is one blue, layered."
+    ]
+  }
+}

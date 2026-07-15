@@ -1,9 +1,9 @@
-# BCL Bet — Multi-Sport Expansion Design
+# PrimeStake — Multi-Sport Expansion Design
 **Date:** 2026-07-12
 
 ## Overview
 
-Expand BCL Bet from a cricket-only tournament betting platform to a 6-sport hub covering cricket, football, table tennis, volleyball, pool, and basketball. Each sport gets its own landing page (`/sports/[sport]`). The homepage becomes a sports hub. Admin can manage teams and matches per sport. No live scores for any sport — admin manually settles markets after results.
+Expand PrimeStake from a cricket-only tournament betting platform to a 6-sport hub covering cricket, football, table tennis, volleyball, pool, and basketball. Each sport gets its own landing page (`/sports/[sport]`). The homepage becomes a sports hub. Admin can manage teams and matches per sport. No live scores for any sport — admin manually settles markets after results.
 
 ---
 

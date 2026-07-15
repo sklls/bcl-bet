@@ -50,22 +50,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1730] flex items-center justify-center px-4">
-      <div className="w-full max-w-md bg-[#162244] rounded-2xl p-8 shadow-xl border border-[#243568]">
+    <div className="min-h-screen bg-baize flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-table rounded-2xl p-8 shadow-xl border border-rail">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-[#F07820]">BPL Bet</h1>
-          <p className="text-[#7a91c4] mt-1">College Cricket Tournament</p>
+          <h1 className="text-3xl font-bold tracking-tight text-amber">PrimeStake</h1>
+          <p className="text-slate mt-1 italic">Luck is for the Unprepared</p>
         </div>
 
-        <div className="flex rounded-lg overflow-hidden mb-6 bg-[#0D1730]">
+        <div className="flex rounded-lg overflow-hidden mb-6 bg-baize">
           <button
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'login' ? 'bg-[#F07820] text-white' : 'text-[#7a91c4] hover:text-white'}`}
+            className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'login' ? 'bg-amber text-white' : 'text-slate hover:text-white'}`}
             onClick={() => { setMode('login'); setError(''); setMessage('') }}
           >
             Sign In
           </button>
           <button
-            className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'signup' ? 'bg-[#F07820] text-white' : 'text-[#7a91c4] hover:text-white'}`}
+            className={`flex-1 py-2 text-sm font-medium transition-colors ${mode === 'signup' ? 'bg-amber text-white' : 'text-slate hover:text-white'}`}
             onClick={() => { setMode('signup'); setError(''); setMessage('') }}
           >
             Create Account
@@ -81,7 +81,7 @@ export default function LoginPage() {
               onChange={(e) => setName(e.target.value)}
               required
               autoComplete="name"
-              className="w-full px-4 py-3 bg-[#1E2E52] border border-[#243568] rounded-lg text-white placeholder-[#5a7099] focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+              className="w-full px-4 py-3 bg-raised border border-rail rounded-lg text-white placeholder-slate-faded focus:outline-none focus:ring-2 focus:ring-amber"
             />
           )}
           <input
@@ -91,7 +91,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete={mode === 'login' ? 'username' : 'email'}
-            className="w-full px-4 py-3 bg-[#1E2E52] border border-[#243568] rounded-lg text-white placeholder-[#5a7099] focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+            className="w-full px-4 py-3 bg-raised border border-rail rounded-lg text-white placeholder-slate-faded focus:outline-none focus:ring-2 focus:ring-amber"
           />
           <input
             type="password"
@@ -101,23 +101,23 @@ export default function LoginPage() {
             required
             minLength={mode === 'signup' ? 6 : undefined}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            className="w-full px-4 py-3 bg-[#1E2E52] border border-[#243568] rounded-lg text-white placeholder-[#5a7099] focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+            className="w-full px-4 py-3 bg-raised border border-rail rounded-lg text-white placeholder-slate-faded focus:outline-none focus:ring-2 focus:ring-amber"
           />
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          {message && <p className="text-[#F07820] text-sm">{message}</p>}
+          {error && <p className="text-crimson-light text-sm">{error}</p>}
+          {message && <p className="text-amber text-sm">{message}</p>}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#F07820] hover:bg-[#D96A18] disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
+            className="w-full py-3 bg-amber hover:bg-amber-deep disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
           >
             {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
         {mode === 'signup' && (
-          <p className="text-xs text-[#5a7099] text-center mt-4">
+          <p className="text-xs text-slate text-center mt-4">
             Your account will need to be topped up by an admin before you can place bets.
           </p>
         )}

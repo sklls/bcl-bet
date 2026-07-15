@@ -3,16 +3,16 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import Navbar from '@/components/ui/Navbar'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'BPL Bet – College Cricket Betting',
-  description: 'Bet on your college cricket tournament matches',
+  title: 'PrimeStake — Luck is for the Unprepared',
+  description: 'Pool-based betting on every BCL sport — live odds, one place. Luck is for the Unprepared.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={inter.variable}>
       <head>
         <script
           async
@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${inter.className} bg-[#0D1730] text-white min-h-screen`}>
+      <body className={`${inter.className} bg-baize text-ink min-h-screen`}>
         <Navbar />
         <main className="max-w-5xl mx-auto px-4 py-6">{children}</main>
       </body>

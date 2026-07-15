@@ -5,10 +5,10 @@ import { format } from 'date-fns'
 export const dynamic = 'force-dynamic'
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'text-yellow-400 bg-yellow-400/10',
+  pending: 'text-gold bg-gold/10',
   won:     'text-green-400 bg-green-400/10',
-  lost:    'text-red-400 bg-red-400/10',
-  void:    'text-gray-400 bg-gray-400/10',
+  lost:    'text-crimson-light bg-crimson/10',
+  void:    'text-slate bg-slate/10',
 }
 
 export default async function LedgerPage() {
@@ -67,26 +67,26 @@ export default async function LedgerPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">📒 Ledger</h1>
-        <p className="text-gray-400 text-sm mt-1">All bets placed across all users and matches</p>
+        <p className="text-slate text-sm mt-1">All bets placed across all users and matches</p>
       </div>
 
       {/* Totals banner */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Total Bets</p>
+        <div className="bg-table border border-rail rounded-xl p-4">
+          <p className="text-xs text-slate mb-1">Total Bets</p>
           <p className="text-2xl font-bold text-white">{(bets ?? []).length}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Total Staked</p>
+        <div className="bg-table border border-rail rounded-xl p-4">
+          <p className="text-xs text-slate mb-1">Total Staked</p>
           <p className="text-2xl font-bold text-white">₹{totalStaked.toLocaleString()}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">Total Paid Out</p>
+        <div className="bg-table border border-rail rounded-xl p-4">
+          <p className="text-xs text-slate mb-1">Total Paid Out</p>
           <p className="text-2xl font-bold text-green-400">₹{totalPaidOut.toLocaleString()}</p>
         </div>
-        <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-          <p className="text-xs text-gray-500 mb-1">House Edge</p>
-          <p className="text-2xl font-bold text-yellow-400">₹{houseEdge.toLocaleString()}</p>
+        <div className="bg-table border border-rail rounded-xl p-4">
+          <p className="text-xs text-slate mb-1">House Edge</p>
+          <p className="text-2xl font-bold text-gold">₹{houseEdge.toLocaleString()}</p>
         </div>
       </div>
 
@@ -96,7 +96,7 @@ export default async function LedgerPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-xs text-gray-500 border-b border-gray-800">
+              <tr className="text-xs text-slate border-b border-rail">
                 <th className="text-left py-2 pr-4">User</th>
                 <th className="text-right py-2 pr-4">Staked</th>
                 <th className="text-right py-2 pr-4">Paid Out</th>
@@ -110,16 +110,16 @@ export default async function LedgerPage() {
               {userSummaries.map((u) => {
                 const net = u.totalPayout - u.totalStaked
                 return (
-                  <tr key={u.name} className="border-b border-gray-800/50 hover:bg-gray-900/50">
+                  <tr key={u.name} className="border-b border-rail/50 hover:bg-table/50">
                     <td className="py-2 pr-4 font-medium text-white">{u.name}</td>
-                    <td className="py-2 pr-4 text-right text-gray-300">₹{u.totalStaked.toLocaleString()}</td>
+                    <td className="py-2 pr-4 text-right text-ink">₹{u.totalStaked.toLocaleString()}</td>
                     <td className="py-2 pr-4 text-right text-green-400">₹{u.totalPayout.toLocaleString()}</td>
-                    <td className={`py-2 pr-4 text-right font-semibold ${net >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    <td className={`py-2 pr-4 text-right font-semibold ${net >= 0 ? 'text-green-400' : 'text-crimson-light'}`}>
                       {net >= 0 ? '+' : ''}₹{net.toLocaleString()}
                     </td>
                     <td className="py-2 pr-4 text-right text-green-400">{u.won}</td>
-                    <td className="py-2 pr-4 text-right text-red-400">{u.lost}</td>
-                    <td className="py-2 text-right text-yellow-400">{u.pending}</td>
+                    <td className="py-2 pr-4 text-right text-crimson-light">{u.lost}</td>
+                    <td className="py-2 text-right text-gold">{u.pending}</td>
                   </tr>
                 )
               })}
@@ -133,31 +133,31 @@ export default async function LedgerPage() {
         <h2 className="text-lg font-semibold mb-3">All Bets (newest first)</h2>
         <div className="space-y-1">
           {(bets ?? []).length === 0 && (
-            <p className="text-gray-500 text-sm">No bets placed yet.</p>
+            <p className="text-slate text-sm">No bets placed yet.</p>
           )}
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {(bets ?? []).map((bet: any) => (
             <div
               key={bet.id}
-              className="flex flex-wrap items-center justify-between gap-2 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3"
+              className="flex flex-wrap items-center justify-between gap-2 bg-table border border-rail rounded-lg px-4 py-3"
             >
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-white">
                     {bet.profiles?.display_name ?? '—'}
                   </span>
-                  <span className="text-xs text-gray-500">→</span>
-                  <span className="text-xs text-gray-300">
+                  <span className="text-xs text-slate">→</span>
+                  <span className="text-xs text-ink">
                     {bet.markets?.matches?.team_a} vs {bet.markets?.matches?.team_b}
                   </span>
-                  <span className="text-xs text-gray-500">·</span>
-                  <span className="text-xs text-gray-400 capitalize">
+                  <span className="text-xs text-slate">·</span>
+                  <span className="text-xs text-slate capitalize">
                     {bet.markets?.market_type === 'custom' && bet.markets?.title ? bet.markets.title : bet.markets?.market_type?.replace('_', ' ')}
                   </span>
-                  <span className="text-xs text-gray-500">·</span>
+                  <span className="text-xs text-slate">·</span>
                   <span className="text-xs font-medium text-blue-300">{bet.bet_options?.label}</span>
                 </div>
-                <p className="text-xs text-gray-600 mt-0.5">
+                <p className="text-xs text-slate mt-0.5">
                   {format(new Date(bet.placed_at), 'dd MMM yyyy, h:mm a')}
                   {bet.settled_at && ` · settled ${format(new Date(bet.settled_at), 'dd MMM, h:mm a')}`}
                 </p>
@@ -165,9 +165,9 @@ export default async function LedgerPage() {
               <div className="text-right shrink-0">
                 <p className="text-sm text-white">
                   ₹{Number(bet.amount).toLocaleString()}
-                  <span className="text-xs text-gray-500 ml-1">@ {Number(bet.odds_at_placement).toFixed(2)}x</span>
+                  <span className="text-xs text-slate ml-1">@ {Number(bet.odds_at_placement).toFixed(2)}x</span>
                 </p>
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[bet.status] ?? 'text-gray-400'}`}>
+                <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[bet.status] ?? 'text-slate'}`}>
                   {bet.status === 'won'
                     ? `+₹${Number(bet.payout).toLocaleString()}`
                     : bet.status.toUpperCase()}

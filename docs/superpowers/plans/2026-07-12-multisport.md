@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Expand BCL Bet from cricket-only to a 6-sport hub (cricket, football, table tennis, volleyball, pool, basketball) with sport-specific markets, a teams management system, sport landing pages at `/sports/[sport]`, and a season reset.
+**Goal:** Expand PrimeStake from cricket-only to a 6-sport hub (cricket, football, table tennis, volleyball, pool, basketball) with sport-specific markets, a teams management system, sport landing pages at `/sports/[sport]`, and a season reset.
 
 **Architecture:** Add a `sport_type` enum and `teams` table to Supabase; add a `sport` column to `matches`; route each sport's matches through `/sports/[sport]`. The homepage becomes a sport-selection hub. All existing betting components (BetSlip, MarketsSection) are reused unchanged.
 

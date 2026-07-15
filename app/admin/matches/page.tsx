@@ -223,7 +223,7 @@ export default function AdminMatchesPage() {
     else setMsg(d.error ?? 'Error voiding bet')
   }
 
-  if (loading) return <div className="text-[#5a7099] py-10 text-center">Loading...</div>
+  if (loading) return <div className="text-slate py-10 text-center">Loading...</div>
 
   return (
     <div className="space-y-6">
@@ -231,17 +231,17 @@ export default function AdminMatchesPage() {
         <h1 className="text-2xl font-bold text-white">Matches &amp; Markets</h1>
         <button
           onClick={() => setShowCreateMatch(!showCreateMatch)}
-          className="px-4 py-2 bg-[#F07820] hover:bg-[#D96A18] text-white rounded-lg text-sm font-medium transition-colors"
+          className="px-4 py-2 bg-amber hover:bg-amber-deep text-white rounded-lg text-sm font-medium transition-colors"
         >
           + New Match
         </button>
       </div>
 
-      {msg && <div className="bg-[#1E2E52] border border-[#243568] rounded-lg px-4 py-2 text-sm text-[#7a91c4]">{msg}</div>}
+      {msg && <div className="bg-raised border border-rail rounded-lg px-4 py-2 text-sm text-slate">{msg}</div>}
 
       {/* Create Match Form */}
       {showCreateMatch && (
-        <form onSubmit={createMatch} className="bg-[#162244] border border-[#243568] rounded-xl p-5 space-y-3">
+        <form onSubmit={createMatch} className="bg-table border border-rail rounded-xl p-5 space-y-3">
           <h2 className="font-semibold text-white">New Match</h2>
 
           <select
@@ -251,7 +251,7 @@ export default function AdminMatchesPage() {
               setMForm({ ...mForm, sport, team_a: '', team_b: '' })
               fetchSportTeams(sport)
             }}
-            className="w-full px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+            className="w-full px-3 py-2 bg-raised border border-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber"
           >
             {ALL_SPORTS.map(s => (
               <option key={s} value={s}>{SPORTS[s].emoji} {SPORTS[s].label}</option>
@@ -263,7 +263,7 @@ export default function AdminMatchesPage() {
               required
               value={mForm.team_a}
               onChange={e => setMForm({ ...mForm, team_a: e.target.value })}
-              className="px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+              className="px-3 py-2 bg-raised border border-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber"
             >
               <option value="">Team A</option>
               {sportTeams.filter(t => t.name !== mForm.team_b).map(t => (
@@ -274,7 +274,7 @@ export default function AdminMatchesPage() {
               required
               value={mForm.team_b}
               onChange={e => setMForm({ ...mForm, team_b: e.target.value })}
-              className="px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+              className="px-3 py-2 bg-raised border border-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber"
             >
               <option value="">Team B</option>
               {sportTeams.filter(t => t.name !== mForm.team_a).map(t => (
@@ -284,9 +284,9 @@ export default function AdminMatchesPage() {
           </div>
 
           {sportTeams.length === 0 && (
-            <p className="text-xs text-[#C41E28]">
+            <p className="text-xs text-crimson-light">
               No {SPORTS[mForm.sport].label} teams registered yet.{' '}
-              <a href="/admin/teams" className="underline text-[#F07820]">Add teams first →</a>
+              <a href="/admin/teams" className="underline text-amber">Add teams first →</a>
             </p>
           )}
 
@@ -295,17 +295,17 @@ export default function AdminMatchesPage() {
             type="datetime-local"
             value={mForm.match_date}
             onChange={e => setMForm({ ...mForm, match_date: e.target.value })}
-            className="w-full px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+            className="w-full px-3 py-2 bg-raised border border-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber"
           />
           <input
             placeholder="Venue (optional)"
             value={mForm.venue}
             onChange={e => setMForm({ ...mForm, venue: e.target.value })}
-            className="w-full px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+            className="w-full px-3 py-2 bg-raised border border-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber"
           />
           <div className="flex gap-2">
-            <button type="submit" className="px-4 py-2 bg-[#F07820] hover:bg-[#D96A18] text-white rounded-lg text-sm font-medium">Create</button>
-            <button type="button" onClick={() => setShowCreateMatch(false)} className="px-4 py-2 bg-[#1E2E52] text-[#7a91c4] rounded-lg text-sm">Cancel</button>
+            <button type="submit" className="px-4 py-2 bg-amber hover:bg-amber-deep text-white rounded-lg text-sm font-medium">Create</button>
+            <button type="button" onClick={() => setShowCreateMatch(false)} className="px-4 py-2 bg-raised text-slate rounded-lg text-sm">Cancel</button>
           </div>
         </form>
       )}
@@ -315,25 +315,25 @@ export default function AdminMatchesPage() {
         {matches.map((match) => {
           const sportMarkets = SPORT_MARKETS[match.sport] ?? SPORT_MARKETS.cricket
           return (
-            <div key={match.id} className="bg-[#162244] border border-[#243568] rounded-xl p-5 space-y-4">
+            <div key={match.id} className="bg-table border border-rail rounded-xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-[#7a91c4] mb-0.5">{SPORTS[match.sport]?.emoji} {SPORTS[match.sport]?.label}</p>
+                  <p className="text-xs text-slate mb-0.5">{SPORTS[match.sport]?.emoji} {SPORTS[match.sport]?.label}</p>
                   <h2 className="font-bold text-white">{match.team_a} vs {match.team_b}</h2>
-                  <p className="text-xs text-[#5a7099]">
+                  <p className="text-xs text-slate">
                     {format(new Date(match.match_date), 'dd MMM yyyy, h:mm a')} · {match.venue ?? 'TBD'}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    match.status === 'live'      ? 'bg-[#C41E28] text-white' :
-                    match.status === 'upcoming'  ? 'bg-[#1B3A8A] text-white' :
-                                                   'bg-[#243568] text-[#7a91c4]'
+                    match.status === 'live'      ? 'bg-crimson text-white' :
+                    match.status === 'upcoming'  ? 'bg-royal text-white' :
+                                                   'bg-rail text-slate'
                   }`}>{match.status}</span>
-                  <button onClick={() => openMarketForm(match)} className="px-3 py-1 bg-[#1E2E52] hover:bg-[#243568] text-[#7a91c4] rounded text-xs">
+                  <button onClick={() => openMarketForm(match)} className="px-3 py-1 bg-raised hover:bg-rail text-slate rounded text-xs">
                     + Market
                   </button>
-                  <button onClick={() => deleteMatch(match.id, `${match.team_a} vs ${match.team_b}`)} className="px-3 py-1 bg-[#C41E28]/10 hover:bg-[#C41E28]/20 text-[#C41E28] rounded text-xs">
+                  <button onClick={() => deleteMatch(match.id, `${match.team_a} vs ${match.team_b}`)} className="px-3 py-1 bg-crimson/10 hover:bg-crimson/20 text-crimson-light rounded text-xs">
                     🗑 Delete
                   </button>
                 </div>
@@ -341,13 +341,13 @@ export default function AdminMatchesPage() {
 
               {/* Create Market Form */}
               {showCreateMarket === match.id && (
-                <form onSubmit={(e) => createMarket(match.id, e)} className="bg-[#0D1730] border border-[#243568] rounded-lg p-4 space-y-3">
+                <form onSubmit={(e) => createMarket(match.id, e)} className="bg-baize border border-rail rounded-lg p-4 space-y-3">
                   <h3 className="text-sm font-semibold text-white">New Market</h3>
 
                   <select
                     value={mkForm.market_type}
                     onChange={e => handleMarketTypeChange(e.target.value, match)}
-                    className="w-full px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded text-white text-sm"
+                    className="w-full px-3 py-2 bg-raised border border-rail rounded text-white text-sm"
                   >
                     {sportMarkets.map(o => (
                       <option key={o.value} value={o.value}>{o.label}</option>
@@ -360,11 +360,11 @@ export default function AdminMatchesPage() {
                         const players = teamPlayers[teamName] ?? []
                         return (
                           <div key={teamName}>
-                            <p className="text-xs font-semibold text-[#F07820] mb-1">{teamName}</p>
+                            <p className="text-xs font-semibold text-amber mb-1">{teamName}</p>
                             <div className="grid grid-cols-2 gap-1">
-                              {players.length === 0 && <p className="text-xs text-[#5a7099] col-span-2">No players registered</p>}
+                              {players.length === 0 && <p className="text-xs text-slate col-span-2">No players registered</p>}
                               {players.map(player => (
-                                <label key={player} className="flex items-center gap-2 cursor-pointer px-2 py-1 bg-[#1E2E52] rounded hover:bg-[#243568]">
+                                <label key={player} className="flex items-center gap-2 cursor-pointer px-2 py-1 bg-raised rounded hover:bg-rail">
                                   <input
                                     type="checkbox"
                                     checked={checkedPlayers[player] ?? true}
@@ -377,7 +377,7 @@ export default function AdminMatchesPage() {
                                       ]
                                       setMkForm(f => ({ ...f, options: allPlayers.filter(p => updated[p] ?? true).join('\n') }))
                                     }}
-                                    className="accent-[#F07820]"
+                                    className="accent-amber"
                                   />
                                   <span className="text-xs text-white">{player}</span>
                                 </label>
@@ -390,7 +390,7 @@ export default function AdminMatchesPage() {
                   ) : mkForm.market_type === 'winner' ? (
                     <div className="flex gap-2">
                       {[match.team_a, match.team_b].map(t => (
-                        <div key={t} className="flex-1 px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded text-white text-sm text-center font-medium">{t}</div>
+                        <div key={t} className="flex-1 px-3 py-2 bg-raised border border-rail rounded text-white text-sm text-center font-medium">{t}</div>
                       ))}
                     </div>
                   ) : mkForm.market_type === 'custom' ? (
@@ -400,21 +400,21 @@ export default function AdminMatchesPage() {
                         placeholder="Market title (e.g. Top Points Scorer)"
                         value={mkForm.customTitle}
                         onChange={e => setMkForm({ ...mkForm, customTitle: e.target.value })}
-                        className="w-full px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F07820]"
+                        className="w-full px-3 py-2 bg-raised border border-rail rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-amber"
                       />
                       {[match.team_a, match.team_b].map(teamName => {
                         const players = teamPlayers[teamName] ?? []
                         return (
                           <div key={teamName}>
-                            <p className="text-xs font-semibold text-[#F07820] mb-1">{teamName}</p>
+                            <p className="text-xs font-semibold text-amber mb-1">{teamName}</p>
                             <div className="grid grid-cols-2 gap-1">
                               {players.map(player => (
-                                <label key={player} className="flex items-center gap-2 cursor-pointer px-2 py-1 bg-[#1E2E52] rounded hover:bg-[#243568]">
+                                <label key={player} className="flex items-center gap-2 cursor-pointer px-2 py-1 bg-raised rounded hover:bg-rail">
                                   <input
                                     type="checkbox"
                                     checked={customCheckedPlayers[player] ?? false}
                                     onChange={e => setCustomCheckedPlayers(prev => ({ ...prev, [player]: e.target.checked }))}
-                                    className="accent-[#F07820]"
+                                    className="accent-amber"
                                   />
                                   <span className="text-xs text-white">{player}</span>
                                 </label>
@@ -428,7 +428,7 @@ export default function AdminMatchesPage() {
                         value={customExtraOptions}
                         onChange={e => setCustomExtraOptions(e.target.value)}
                         rows={3}
-                        className="w-full px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded text-white text-sm font-mono"
+                        className="w-full px-3 py-2 bg-raised border border-rail rounded text-white text-sm font-mono"
                       />
                     </div>
                   ) : (
@@ -438,21 +438,21 @@ export default function AdminMatchesPage() {
                       value={mkForm.options}
                       onChange={e => setMkForm({ ...mkForm, options: e.target.value })}
                       rows={4}
-                      className="w-full px-3 py-2 bg-[#1E2E52] border border-[#243568] rounded text-white text-sm font-mono"
+                      className="w-full px-3 py-2 bg-raised border border-rail rounded text-white text-sm font-mono"
                     />
                   )}
 
                   <div className="flex items-center gap-2">
-                    <label className="text-xs text-[#7a91c4]">House edge %</label>
+                    <label className="text-xs text-slate">House edge %</label>
                     <input
                       type="number" value={mkForm.house_edge_pct} min="0" max="20"
                       onChange={e => setMkForm({ ...mkForm, house_edge_pct: e.target.value })}
-                      className="w-20 px-2 py-1 bg-[#1E2E52] border border-[#243568] rounded text-white text-sm"
+                      className="w-20 px-2 py-1 bg-raised border border-rail rounded text-white text-sm"
                     />
                   </div>
                   <div className="flex gap-2">
-                    <button type="submit" className="px-3 py-1.5 bg-[#F07820] hover:bg-[#D96A18] text-white rounded text-sm">Create</button>
-                    <button type="button" onClick={() => setShowCreateMarket(null)} className="px-3 py-1.5 bg-[#1E2E52] text-[#7a91c4] rounded text-sm">Cancel</button>
+                    <button type="submit" className="px-3 py-1.5 bg-amber hover:bg-amber-deep text-white rounded text-sm">Create</button>
+                    <button type="button" onClick={() => setShowCreateMarket(null)} className="px-3 py-1.5 bg-raised text-slate rounded text-sm">Cancel</button>
                   </div>
                 </form>
               )}
@@ -461,13 +461,13 @@ export default function AdminMatchesPage() {
               {match.markets?.length > 0 && (
                 <div className="space-y-3">
                   {match.markets.map(market => (
-                    <div key={market.id} className="bg-[#0D1730] border border-[#243568] rounded-lg p-4">
+                    <div key={market.id} className="bg-baize border border-rail rounded-lg p-4">
                       <div
                         className="flex items-center justify-between cursor-pointer select-none"
                         onClick={() => toggleMarketExpand(market.id)}
                       >
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span className="text-[#5a7099] text-xs">{expandedMarkets.has(market.id) ? '▾' : '▸'}</span>
+                          <span className="text-slate text-xs">{expandedMarkets.has(market.id) ? '▾' : '▸'}</span>
                           {editingTitleId === market.id ? (
                             <div className="flex items-center gap-1 flex-1" onClick={e => e.stopPropagation()}>
                               <input
@@ -475,10 +475,10 @@ export default function AdminMatchesPage() {
                                 value={editingTitleValue}
                                 onChange={e => setEditingTitleValue(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') saveMarketTitle(market.id); if (e.key === 'Escape') setEditingTitleId(null) }}
-                                className="flex-1 px-2 py-0.5 bg-[#1E2E52] border border-[#243568] rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#F07820]"
+                                className="flex-1 px-2 py-0.5 bg-raised border border-rail rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-amber"
                               />
-                              <button onClick={() => saveMarketTitle(market.id)} className="text-xs px-2 py-0.5 bg-[#F07820] hover:bg-[#D96A18] text-white rounded">Save</button>
-                              <button onClick={() => setEditingTitleId(null)} className="text-xs px-2 py-0.5 bg-[#1E2E52] text-[#7a91c4] rounded">✕</button>
+                              <button onClick={() => saveMarketTitle(market.id)} className="text-xs px-2 py-0.5 bg-amber hover:bg-amber-deep text-white rounded">Save</button>
+                              <button onClick={() => setEditingTitleId(null)} className="text-xs px-2 py-0.5 bg-raised text-slate rounded">✕</button>
                             </div>
                           ) : (
                             <>
@@ -487,9 +487,9 @@ export default function AdminMatchesPage() {
                               </span>
                               <button
                                 onClick={e => { e.stopPropagation(); setEditingTitleId(market.id); setEditingTitleValue(market.title || '') }}
-                                className="text-[#5a7099] hover:text-[#7a91c4] text-xs"
+                                className="text-slate hover:text-slate text-xs"
                               >✎</button>
-                              <span className="text-xs text-[#5a7099]">
+                              <span className="text-xs text-slate">
                                 {market.bet_options?.length ?? 0} options · ₹{(market.bet_options ?? []).reduce((s, o) => s + Number(o.total_amount_bet), 0).toLocaleString('en-IN')} staked
                               </span>
                             </>
@@ -501,20 +501,20 @@ export default function AdminMatchesPage() {
                               onClick={() => toggleMarket(market.id, market.status)}
                               className={`px-3 py-1 rounded text-xs font-medium ${
                                 market.status === 'open'
-                                  ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30'
-                                  : 'bg-[#F07820]/20 text-[#F07820] hover:bg-[#F07820]/30'
+                                  ? 'bg-gold/20 text-gold hover:bg-gold/30'
+                                  : 'bg-amber/20 text-amber hover:bg-amber/30'
                               }`}
                             >
                               {market.status === 'open' ? 'Close Betting' : 'Open Betting'}
                             </button>
                           )}
                           {market.status === 'settled' && (
-                            <span className="text-xs text-[#5a7099]">Settled: {market.result}</span>
+                            <span className="text-xs text-slate">Settled: {market.result}</span>
                           )}
                           {market.status !== 'settled' && (
                             <button
                               onClick={() => deleteMarket(market.id, market.market_type.replace(/_/g, ' '))}
-                              className="px-2 py-1 bg-[#C41E28]/10 hover:bg-[#C41E28]/20 text-[#C41E28] rounded text-xs"
+                              className="px-2 py-1 bg-crimson/10 hover:bg-crimson/20 text-crimson-light rounded text-xs"
                             >
                               🗑
                             </button>
@@ -525,35 +525,35 @@ export default function AdminMatchesPage() {
                       {expandedMarkets.has(market.id) && (
                         <div className="space-y-2 mt-3">
                           {market.bet_options?.map(opt => (
-                            <div key={opt.id} className="bg-[#162244] border border-[#243568] rounded p-3">
+                            <div key={opt.id} className="bg-table border border-rail rounded p-3">
                               <div className="flex items-center justify-between mb-2">
                                 <div>
                                   <p className="text-xs font-medium text-white">{opt.label}</p>
-                                  <p className="text-xs text-[#5a7099]">₹{Number(opt.total_amount_bet).toLocaleString()} total</p>
+                                  <p className="text-xs text-slate">₹{Number(opt.total_amount_bet).toLocaleString()} total</p>
                                 </div>
                                 {(market.status === 'closed' || market.status === 'open') && (
                                   <button
                                     onClick={() => { if (confirm(`Declare "${opt.label}" as winner?`)) settleMarket(market.id, opt.id) }}
-                                    className="text-xs px-2 py-1 bg-[#F07820] hover:bg-[#D96A18] text-white rounded"
+                                    className="text-xs px-2 py-1 bg-amber hover:bg-amber-deep text-white rounded"
                                   >
                                     ✓ Winner
                                   </button>
                                 )}
                               </div>
                               {opt.bets && opt.bets.filter(b => b.status !== 'void').length > 0 && (
-                                <div className="space-y-1 mt-1 border-t border-[#243568] pt-1">
+                                <div className="space-y-1 mt-1 border-t border-rail pt-1">
                                   {opt.bets.filter(b => b.status !== 'void').map(bet => (
                                     <div key={bet.id} className="flex items-center justify-between text-xs">
-                                      <span className="text-[#7a91c4]">
+                                      <span className="text-slate">
                                         {bet.profiles?.display_name ?? bet.user_id.slice(0, 8)} — ₹{Number(bet.amount).toLocaleString()}
-                                        <span className={`ml-1 ${bet.status === 'won' ? 'text-[#F07820]' : bet.status === 'lost' ? 'text-[#C41E28]' : 'text-yellow-400'}`}>
+                                        <span className={`ml-1 ${bet.status === 'won' ? 'text-amber' : bet.status === 'lost' ? 'text-crimson-light' : 'text-gold'}`}>
                                           ({bet.status})
                                         </span>
                                       </span>
                                       {bet.status === 'pending' && (
                                         <button
                                           onClick={() => voidBet(bet.id, Number(bet.amount))}
-                                          className="px-1.5 py-0.5 bg-[#C41E28]/10 hover:bg-[#C41E28]/20 text-[#C41E28] rounded ml-2"
+                                          className="px-1.5 py-0.5 bg-crimson/10 hover:bg-crimson/20 text-crimson-light rounded ml-2"
                                         >
                                           Void
                                         </button>
@@ -575,7 +575,7 @@ export default function AdminMatchesPage() {
         })}
 
         {matches.length === 0 && (
-          <p className="text-[#5a7099] text-center py-10">No matches yet. Create one above.</p>
+          <p className="text-slate text-center py-10">No matches yet. Create one above.</p>
         )}
       </div>
     </div>

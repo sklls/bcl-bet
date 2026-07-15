@@ -1,11 +1,13 @@
 import Link from 'next/link'
-import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createPublicClient } from '@/lib/supabase-server'
 import { SPORTS, ALL_SPORTS, SportType } from '@/lib/sports'
+import SportIcon from '@/components/ui/SportIcon'
 
-export const dynamic = 'force-dynamic'
+// Public match counts only — cache for 30s instead of rendering fresh every hit.
+export const revalidate = 30
 
 export default async function HomePage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = createPublicClient()
   const { data: matches } = await supabase
     .from('matches')
     .select('sport, status')
@@ -30,32 +32,51 @@ export default async function HomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-white">BCL Tournament</h1>
-        <p className="text-[#7a91c4] text-sm mt-1">Select a sport to view matches and place bets</p>
+        <h1 className="text-2xl font-bold tracking-tight text-ink">BCL Tournament</h1>
+        <p className="text-slate text-sm mt-1">Select a sport to view matches and place bets</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ALL_SPORTS.map(sport => {
           const { live, upcoming } = counts[sport]
           return (
-            <Link key={sport} href={`/sports/${sport}`}>
-              <div className="bg-[#162244] hover:bg-[#1E2E52] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-6 transition-all cursor-pointer h-full">
-                <div className="text-4xl mb-3">{SPORTS[sport].emoji}</div>
-                <h2 className="text-lg font-bold text-white">{SPORTS[sport].label}</h2>
-                <div className="mt-2 space-y-0.5 min-h-[36px]">
+            <Link
+              key={sport}
+              href={`/sports/${sport}`}
+              className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-amber focus-visible:ring-offset-2 focus-visible:ring-offset-baize"
+            >
+              <div className="flex h-full flex-col bg-table hover:bg-raised border border-rail group-hover:border-amber/50 group-focus-visible:border-amber rounded-xl p-6 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-raised text-slate transition-colors group-hover:text-ink">
+                    <SportIcon sport={sport} className="h-7 w-7" />
+                  </div>
+                  <span
+                    aria-hidden="true"
+                    className="text-amber transition-transform duration-200 group-hover:translate-x-1"
+                  >
+                    →
+                  </span>
+                </div>
+
+                <h2 className="mt-4 text-lg font-bold text-ink">{SPORTS[sport].label}</h2>
+
+                <div className="mt-1.5 min-h-[36px] space-y-0.5">
                   {live > 0 && (
-                    <p className="text-xs text-[#C41E28] font-medium animate-pulse">
-                      🔴 {live} match{live > 1 ? 'es' : ''} live now
+                    <p className="flex items-center gap-1.5 text-xs font-medium text-crimson-light">
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-crimson opacity-75 animate-ping motion-reduce:hidden" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-crimson-light" />
+                      </span>
+                      {live} match{live > 1 ? 'es' : ''} live now
                     </p>
                   )}
                   {upcoming > 0 && (
-                    <p className="text-xs text-[#7a91c4]">{upcoming} upcoming</p>
+                    <p className="text-xs text-slate">{upcoming} upcoming</p>
                   )}
                   {live === 0 && upcoming === 0 && (
-                    <p className="text-xs text-[#5a7099]">No matches scheduled</p>
+                    <p className="text-xs text-slate">No matches scheduled</p>
                   )}
                 </div>
-                <p className="text-xs text-[#F07820] font-medium mt-4">View matches →</p>
               </div>
             </Link>
           )

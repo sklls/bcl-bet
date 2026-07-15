@@ -1,6 +1,8 @@
-# BPL Bet
+# PrimeStake
 
-A real-money cricket betting platform built for the **BCL (Business Cricket League)** tournament. Players can bet on live match markets using pari-mutuel odds, track their P&L, and compete on a leaderboard — all in real time.
+> *Luck is for the Unprepared.*
+
+A real-money, multi-sport betting platform built for the **BCL (Business Cricket League)** tournament. Players can bet on live match markets using pari-mutuel odds, track their P&L, and compete on a leaderboard — all in real time.
 
 ---
 
@@ -92,7 +94,7 @@ bcl-bet/
 
 ## Odds System
 
-BPL Bet uses **pari-mutuel odds** — the same system used by horse racing and state lotteries.
+PrimeStake uses **pari-mutuel odds** — the same system used by horse racing and state lotteries.
 
 ```
 odds = (total_pool / amount_on_this_option) * (1 - house_edge%)

@@ -20,13 +20,13 @@ type Match = {
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    live:      'bg-[#C41E28] animate-pulse',
-    upcoming:  'bg-[#1B3A8A]',
-    completed: 'bg-[#243568] text-[#7a91c4]',
-    cancelled: 'bg-yellow-700',
+    live:      'bg-crimson animate-pulse',
+    upcoming:  'bg-royal',
+    completed: 'bg-rail text-slate',
+    cancelled: 'bg-gold',
   }
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full text-white font-medium ${colors[status] ?? 'bg-[#243568]'}`}>
+    <span className={`text-xs px-2 py-0.5 rounded-full text-white font-medium ${colors[status] ?? 'bg-rail'}`}>
       {status.toUpperCase()}
     </span>
   )
@@ -36,10 +36,10 @@ function MatchCard({ match }: { match: Match }) {
   const openMarkets = match.markets?.filter(m => m.status === 'open').length ?? 0
   return (
     <Link href={`/sports/${match.sport}/${match.id}`}>
-      <div className="bg-[#162244] hover:bg-[#1E2E52] border border-[#243568] hover:border-[#F07820]/50 rounded-xl p-5 transition-all cursor-pointer">
+      <div className="bg-table hover:bg-raised border border-rail hover:border-amber/50 rounded-xl p-5 transition-all cursor-pointer">
         <div className="flex items-center justify-between mb-3">
           <StatusBadge status={match.status} />
-          <span className="text-xs text-[#5a7099]">
+          <span className="text-xs text-slate">
             {format(new Date(match.match_date), 'dd MMM, h:mm a')}
           </span>
         </div>
@@ -47,21 +47,21 @@ function MatchCard({ match }: { match: Match }) {
           <div className="text-center flex-1">
             <p className="font-bold text-lg">{match.team_a}</p>
           </div>
-          <div className="text-[#5a7099] font-bold text-sm px-4">VS</div>
+          <div className="text-slate font-bold text-sm px-4">VS</div>
           <div className="text-center flex-1">
             <p className="font-bold text-lg">{match.team_b}</p>
           </div>
         </div>
         {match.venue && (
-          <p className="text-xs text-[#5a7099] text-center mt-2">{match.venue}</p>
+          <p className="text-xs text-slate text-center mt-2">{match.venue}</p>
         )}
-        <div className="mt-3 pt-3 border-t border-[#243568] flex items-center justify-between">
-          <span className="text-xs text-[#7a91c4]">
+        <div className="mt-3 pt-3 border-t border-rail flex items-center justify-between">
+          <span className="text-xs text-slate">
             {openMarkets > 0
-              ? <span className="text-[#F07820]">{openMarkets} market{openMarkets > 1 ? 's' : ''} open</span>
+              ? <span className="text-amber">{openMarkets} market{openMarkets > 1 ? 's' : ''} open</span>
               : 'No open markets'}
           </span>
-          <span className="text-xs text-[#F07820] font-medium">View →</span>
+          <span className="text-xs text-amber font-medium">View →</span>
         </div>
       </div>
     </Link>
@@ -89,8 +89,8 @@ export default async function SportPage({ params }: { params: { sport: string } 
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-3">
-        <Link href="/" className="text-[#7a91c4] hover:text-white text-sm transition-colors">← Sports</Link>
-        <span className="text-[#243568]">/</span>
+        <Link href="/" className="text-slate hover:text-white text-sm transition-colors">← Sports</Link>
+        <span className="text-rail">/</span>
         <h1 className="text-2xl font-bold text-white">
           {SPORTS[sport].emoji} {SPORTS[sport].label}
         </h1>
@@ -98,7 +98,7 @@ export default async function SportPage({ params }: { params: { sport: string } 
 
       {live.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-[#C41E28] mb-3">Live Now</h2>
+          <h2 className="text-lg font-semibold text-crimson-light mb-3">Live Now</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {live.map((m: Match) => <MatchCard key={m.id} match={m} />)}
           </div>
@@ -109,7 +109,7 @@ export default async function SportPage({ params }: { params: { sport: string } 
 
       {upcoming.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-[#F07820] mb-3">Upcoming</h2>
+          <h2 className="text-lg font-semibold text-amber mb-3">Upcoming</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {upcoming.map((m: Match) => <MatchCard key={m.id} match={m} />)}
           </div>
@@ -120,7 +120,7 @@ export default async function SportPage({ params }: { params: { sport: string } 
 
       {completed.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-[#5a7099] mb-3">Completed</h2>
+          <h2 className="text-lg font-semibold text-slate mb-3">Completed</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {completed.map((m: Match) => <MatchCard key={m.id} match={m} />)}
           </div>
@@ -128,7 +128,7 @@ export default async function SportPage({ params }: { params: { sport: string } 
       )}
 
       {(matches ?? []).length === 0 && (
-        <div className="text-center py-20 text-[#5a7099]">
+        <div className="text-center py-20 text-slate">
           <p className="text-4xl mb-3">{SPORTS[sport].emoji}</p>
           <p>No {SPORTS[sport].label} matches scheduled yet.</p>
         </div>
