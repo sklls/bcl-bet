@@ -6,7 +6,7 @@ export default function AdBanner() {
   useEffect(() => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(window.adsbygoogle = (window as any).adsbygoogle || []).push({})
+      ;((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({})
     } catch {}
   }, [])
 
