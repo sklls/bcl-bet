@@ -165,10 +165,43 @@ export function settleMarket(input: SettleInput): SettleResult {
 
   // Nobody should win a bet and end up down. If the rake would push a winner
   // below their stake, hand back the stake and let the house take less.
+  const floors = winners.map((b) => round2(Number(b.amount)))
   payouts = payouts.map((p, i) => ({
     ...p,
-    amount: Math.max(p.amount, round2(Number(winners[i].amount))),
+    amount: Math.max(p.amount, floors[i]),
   }))
+
+  // The guarantee is applied per bet, so it can collectively overshoot: inside
+  // the narrow band where the payout per unit of weight sits between 1/1.1 and
+  // 1, the early-bird weight holds some winners above their stake while the
+  // guarantee lifts the rest up to theirs, and the two stack past the pool.
+  //
+  // The floors themselves are always affordable — the pool holds every winning
+  // stake plus the losing side plus the seed, so sum(stakes) <= pool — which
+  // means a correct settlement always exists. Only the surplus above the floors
+  // can overshoot, so that is the only part scaled back. Guarantees survive
+  // intact and proportionality survives among everyone above their floor.
+  //
+  // Capped against `pool`, not `payoutPool`: once the guarantee binds the house
+  // edge is being surrendered by design, and the pool is the true solvency limit.
+  const totalFloor = floors.reduce((s, f) => s + f, 0)
+  const totalSurplus = payouts.reduce((s, p, i) => s + (p.amount - floors[i]), 0)
+
+  if (totalFloor + totalSurplus > pool && totalSurplus > 0) {
+    const scale = Math.max(0, (pool - totalFloor) / totalSurplus)
+    // Scaling makes the *unrounded* total exactly `pool`, so rounding the
+    // scaled surplus to nearest would let n payouts each drift up half a paisa
+    // and breach the cap again — measured at +0.06 across 50 winners, which is
+    // still over the SQL guard's 0.01 tolerance. Truncating instead keeps the
+    // sum provably <= pool: each winner gives up at most one paisa, always in
+    // the house's favour, and the floor is untouched because it is already
+    // whole paise and the surplus can only be non-negative.
+    const floor2 = (n: number) => Math.floor(n * 100) / 100
+    payouts = payouts.map((p, i) => ({
+      ...p,
+      amount: floors[i] + floor2((p.amount - floors[i]) * scale),
+    }))
+  }
 
   const paid = payouts.reduce((s, p) => s + p.amount, 0)
 

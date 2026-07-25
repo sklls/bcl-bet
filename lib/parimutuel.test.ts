@@ -239,6 +239,129 @@ describe('settleMarket', () => {
     expect(result.houseTake).toBeLessThan(50)
   })
 
+  it('never overpays when the stake guarantee and early-bird weight combine', () => {
+    // Regression: the per-bet guarantee used to stack with the early-bird
+    // weight and pay out 10049.74 from a 10001 pool, driving houseTake to
+    // -48.74 and making the market unsettleable behind the SQL solvency guard.
+    const options = [
+      { id: 'a', total_amount_bet: 10000, seed_amount: 0 },
+      { id: 'b', total_amount_bet: 1, seed_amount: 0 },
+    ]
+    const result = settleMarket({
+      options,
+      bets: [
+        { id: 'early', user_id: 'u1', bet_option_id: 'a', amount: 2200, placed_at: EARLY },
+        { id: 'late',  user_id: 'u2', bet_option_id: 'a', amount: 7800, placed_at: LATE },
+        { id: 'lose',  user_id: 'u3', bet_option_id: 'b', amount: 1,    placed_at: LATE },
+      ],
+      winningOptionId: 'a',
+      houseEdgePct: 5,
+      marketCreatedAt: CREATED,
+    })
+    if (result.kind !== 'paid') throw new Error('expected paid')
+
+    const paid = result.payouts.reduce((s, p) => s + p.amount, 0)
+    expect(paid).toBeLessThanOrEqual(poolTotal(options))
+    expect(result.houseTake).toBeGreaterThanOrEqual(0)
+
+    // the guarantee still holds for both winners
+    expect(result.payouts.find((p) => p.bet_id === 'early')!.amount).toBeGreaterThanOrEqual(2200)
+    expect(result.payouts.find((p) => p.bet_id === 'late')!.amount).toBeGreaterThanOrEqual(7800)
+  })
+
+  it('holds the solvency invariant across the whole guarantee/early-bird boundary', () => {
+    // The overshoot lived where the losing side was under ~0.66% of the pool
+    // and the winning option carried no seed. These walk that boundary and out
+    // the far side of it, plus the degenerate all-early / all-late shapes.
+    const cases: Array<{ early: number; late: number; lose: number; seed: number }> = [
+      { early: 2200,  late: 7800, lose: 1,    seed: 0 },   // the reported case
+      { early: 2225,  late: 7775, lose: 1,    seed: 0 },   // analytic worst point
+      { early: 2270,  late: 7730, lose: 10,   seed: 0 },
+      { early: 2310,  late: 7690, lose: 20,   seed: 0 },
+      { early: 2360,  late: 7640, lose: 30,   seed: 0 },
+      { early: 2470,  late: 7530, lose: 50,   seed: 0 },
+      { early: 2510,  late: 7490, lose: 60,   seed: 0 },   // 0.60% — last unsafe
+      { early: 2610,  late: 7390, lose: 80,   seed: 0 },   // 0.79% — first safe
+      { early: 2720,  late: 7280, lose: 100,  seed: 0 },
+      { early: 2760,  late: 7240, lose: 1,    seed: 100 }, // seed alone mitigates
+      { early: 4840,  late: 5160, lose: 1,    seed: 500 },
+      { early: 0,     late: 10000, lose: 1,   seed: 0 },   // all late
+      { early: 10000, late: 0,    lose: 1,    seed: 0 },   // all early
+      { early: 495,   late: 495,  lose: 10,   seed: 0 },   // guarantee binds hard
+      { early: 1,     late: 1,    lose: 0.01, seed: 0 },   // sub-rupee pool
+    ]
+
+    for (const c of cases) {
+      const bets = []
+      if (c.early > 0)
+        bets.push({ id: 'e', user_id: 'ue', bet_option_id: 'a', amount: c.early, placed_at: EARLY })
+      if (c.late > 0)
+        bets.push({ id: 'l', user_id: 'ul', bet_option_id: 'a', amount: c.late, placed_at: LATE })
+      bets.push({ id: 'x', user_id: 'ux', bet_option_id: 'b', amount: c.lose, placed_at: LATE })
+
+      const options = [
+        { id: 'a', total_amount_bet: c.early + c.late, seed_amount: c.seed },
+        { id: 'b', total_amount_bet: c.lose, seed_amount: c.seed },
+      ]
+      const result = settleMarket({
+        options,
+        bets,
+        winningOptionId: 'a',
+        houseEdgePct: 5,
+        marketCreatedAt: CREATED,
+      })
+
+      const label = JSON.stringify(c)
+      if (result.kind !== 'paid') throw new Error(`expected paid for ${label}`)
+
+      const pool = poolTotal(options)
+      const paid = result.payouts.reduce((s, p) => s + p.amount, 0)
+      expect(paid, `overpaid for ${label}`).toBeLessThanOrEqual(pool)
+      expect(result.houseTake, `negative houseTake for ${label}`).toBeGreaterThanOrEqual(0)
+
+      // and the guarantee is never sacrificed to achieve it
+      for (const p of result.payouts) {
+        const stake = p.bet_id === 'e' ? c.early : c.late
+        expect(p.amount, `winner below stake for ${label}`).toBeGreaterThanOrEqual(stake)
+      }
+    }
+  })
+
+  it('holds the invariant with many winners, where per-payout rounding could re-breach it', () => {
+    // Capping the surplus makes the *unrounded* total exactly the pool, so
+    // rounding 50 payouts to nearest would drift up to +0.25 over it — measured
+    // at +0.06 here, still past the SQL guard's 0.01 tolerance. Truncating the
+    // scaled surplus is what keeps this at or under the pool.
+    const bets = Array.from({ length: 50 }, (_, i) => ({
+      id: `w${i}`,
+      user_id: `u${i}`,
+      bet_option_id: 'a',
+      amount: Math.round((100 + ((i * 37.77) % 411)) * 100) / 100,
+      placed_at: i < 15 ? EARLY : LATE,
+    }))
+    const winStake = Math.round(bets.reduce((s, b) => s + b.amount, 0) * 100) / 100
+    const options = [
+      { id: 'a', total_amount_bet: winStake, seed_amount: 0 },
+      { id: 'b', total_amount_bet: 1, seed_amount: 0 },
+    ]
+    const result = settleMarket({
+      options,
+      bets: [...bets, { id: 'x', user_id: 'ux', bet_option_id: 'b', amount: 1, placed_at: LATE }],
+      winningOptionId: 'a',
+      houseEdgePct: 5,
+      marketCreatedAt: CREATED,
+    })
+    if (result.kind !== 'paid') throw new Error('expected paid')
+
+    const paid = result.payouts.reduce((s, p) => s + p.amount, 0)
+    expect(paid).toBeLessThanOrEqual(poolTotal(options))
+    expect(result.houseTake).toBeGreaterThanOrEqual(0)
+    for (const p of result.payouts) {
+      const stake = bets.find((b) => b.id === p.bet_id)!.amount
+      expect(p.amount).toBeGreaterThanOrEqual(stake)
+    }
+  })
+
   it('returns void with no refunds when there were no bets at all', () => {
     const result = settleMarket({
       options: [
