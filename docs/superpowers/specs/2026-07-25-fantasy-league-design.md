@@ -84,14 +84,78 @@ collects ₹1's worth of the pot. The exploit closes by construction.
 from realtime `bet_options` updates. The bet slip shows *"~₹950 at current pool"*,
 never *"Win ₹950"*.
 
+## House seeding
+
+Pari-mutuel's cost is that late money reprices everyone. Measured on real data,
+the single largest bet averages **50% of the entire pool** — with 17 users and
+~5 bets per market, one person routinely moves everyone's payout. A percentage
+stake cap was rejected: capping at 10% of pool would block 53% of all bets, and
+even 33% would block 25%. The pools are too small for caps to catch only whales.
+
+Instead **the house seeds each market**, and critically the seed is
+**split equally across the options**, not left unallocated.
+
+```
+per_option_seed = market.seed_amount / count(bet_options)
+```
+
+The seed counts as stake for both odds and settlement. Because it sits *on* the
+outcomes, the house's share of its own seed on the winning option is simply never
+paid out — so the seed largely returns to the house rather than being a pure
+subsidy.
+
+### Why split rather than unallocated
+
+Simulated over the 30 real settled markets:
+
+| Seed | Mode | Shown-vs-actual gap | House / season |
+|---|---|---|---|
+| ₹0 | — | wildly wrong both ways | +₹6,930 |
+| ₹500 | unallocated | ok | **−₹22,320** |
+| ₹500 | split on options | within 5% | +₹16,237 |
+| **₹1,000** | **split on options** | **within 3%** | **+₹9,776** |
+| ₹2,000 | split on options | within 7% | −₹4,300 |
+
+Unallocated seeding costs ₹22,320 a season because the house funds a larger pot
+and claims none of it. Split across options at ₹1,000, projections land within 3%
+of the final payout and the house still clears ~₹9,800.
+
+**The main benefit is not skew-dampening — it is that the displayed number becomes
+meaningful at all.** Un-seeded, the first bettor into a market sees 0.95x or
+1140.95x purely depending on which side they picked first, then lands somewhere
+unrelated. Seeding gives every option a non-zero base so opening prices are sane.
+
+**Default: ₹1,000 per market**, stored on `markets.seed_amount` and editable per
+market by the admin. ₹500 is the conservative alternative — it preserves last
+season's ₹16,801 margin almost exactly.
+
+**Known limit:** seeding barely improves the *worst* case, which only falls from a
+100% to an 83% gap. A late ₹5,000 bet still dilutes badly whatever the pot started
+at. The live pool-composition display has to carry that, by making the shift
+visible while it happens rather than a surprise at settlement.
+
 ## Settlement rules
 
 | Case | Behaviour |
 |---|---|
 | Normal | Pro-rata split of `pool × 0.95` among winners |
-| **Nobody backed the winner** | **Void, refund every stake.** House takes nothing |
-| **Only one option received money** | **Void, refund.** No contest took place |
+| **Nobody backed the winner** | **Void, refund every stake.** Seed returns to the house |
+| **Only one option received real bets** | **Void, refund.** No contest took place |
 | **Pro-rata would return less than stake** | **Guarantee the stake.** House take shrinks to whatever remains |
+
+Note the second rule tests *real bets*, not stake: once seeded, every option always
+holds money, so the un-seeded test would never fire.
+
+Settlement totals include the seed on both sides of the ratio:
+
+```
+W            = staked_on_winner + seed_on_winner
+payout_pool  = (total_pool + total_seed) × 0.95
+your_payout  = payout_pool × (your_stake / W)
+```
+
+The house's implicit claim, `payout_pool × (seed_on_winner / W)`, is simply never
+disbursed — it stays in the house account and needs no ledger entry.
 
 The last rule removes the "I won my bet and lost money" outcome that the 1.01x
 floor produced 60 times.
@@ -312,6 +376,24 @@ CREATE TABLE player_match_stats (
 
 Two new `transaction_type` values — `fantasy_entry` and `fantasy_prize` — so the
 existing ledger, leaderboard and P&L stay honest across both modes on one wallet.
+
+Betting-side columns for house seeding:
+
+```sql
+ALTER TABLE markets
+  ADD COLUMN seed_amount NUMERIC(10,2) NOT NULL DEFAULT 1000;
+
+-- per-option allocation, set at market creation to seed_amount / option_count.
+-- kept separate from total_amount_bet so house money stays distinguishable
+-- from real stakes for accounting and for the bettors list.
+ALTER TABLE bet_options
+  ADD COLUMN seed_amount NUMERIC(10,2) NOT NULL DEFAULT 0;
+
+-- sub-rupee stakes are currently legal; raise the floor to ₹1
+ALTER TABLE bets
+  DROP CONSTRAINT bets_amount_check,
+  ADD CONSTRAINT bets_amount_check CHECK (amount >= 1);
+```
 
 ## Components
 
