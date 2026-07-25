@@ -96,7 +96,26 @@ never *"Win ₹950"*.
 The last rule removes the "I won my bet and lost money" outcome that the 1.01x
 floor produced 60 times.
 
-**Minimum stake: ₹10**, to stop ₹1 lottery-ticket spam.
+### No minimum stake
+
+An earlier draft specified a ₹10 minimum to stop ₹1 lottery-ticket spam. **Dropped
+— it fixes a problem that pari-mutuel already closes.** ₹1 bets were only
+dangerous because locked odds turned them into free options on the pool. Pro-rata
+makes the same bet unremarkable: ₹1 into a ₹12,000 pool with ₹5,100 on the winner
+pays ₹2.24.
+
+The data does not support a floor either. Stakes of ₹10 or less are 11.2% of bets
+but **₹137 of ₹155,117 turnover (0.09%)**, and 17 of those 20 bets are the admin
+account probing the exploit. Median stake is ₹500, p25 is ₹200.
+
+Against that, a floor excludes players with low balances at exactly the moment
+they are most price-sensitive, and works against the engagement goal in
+`PRODUCT.md:19`.
+
+Raise the existing `CHECK (amount > 0)` to `>= 1` so sub-rupee stakes are
+impossible (`bets.amount` is `DECIMAL(10,2)`, so ₹0.01 is currently legal). If ₹1
+spam ever becomes a nuisance, rate-limit bets per user per market — that targets
+the behaviour rather than penalising cautious players.
 
 ## Migration path
 
