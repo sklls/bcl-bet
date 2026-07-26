@@ -362,6 +362,62 @@ describe('settleMarket', () => {
     }
   })
 
+  it('stays solvent when option totals lag behind the bets being settled', () => {
+    // The settle route reads bet_options and bets in two separate queries, so a
+    // bet landing between them can leave option.total_amount_bet lagging what
+    // the bets array actually owes. Capacity must come from whichever is
+    // larger, or the guarantee floor overpays against a stale, too-small pool.
+    const options = [
+      { id: 'a', total_amount_bet: 100, seed_amount: 0 },
+      { id: 'b', total_amount_bet: 1, seed_amount: 0 },
+    ]
+    const bets = [
+      { id: 'e', user_id: 'u', bet_option_id: 'a', amount: 9000, placed_at: EARLY },
+      { id: 'x', user_id: 'v', bet_option_id: 'b', amount: 1, placed_at: LATE },
+    ]
+    const result = settleMarket({
+      options,
+      bets,
+      winningOptionId: 'a',
+      houseEdgePct: 5,
+      marketCreatedAt: CREATED,
+    })
+    if (result.kind !== 'paid') throw new Error('expected paid')
+
+    const betsTotal = bets.reduce((s, b) => s + Number(b.amount), 0)
+    const seedTotal = options.reduce((s, o) => s + Number(o.seed_amount), 0)
+    const capacity = Math.max(poolTotal(options), betsTotal + seedTotal)
+
+    const paid = result.payouts.reduce((s, p) => s + p.amount, 0)
+    expect(paid).toBeLessThanOrEqual(capacity)
+    expect(result.houseTake).toBeGreaterThanOrEqual(0)
+    expect(result.payouts.find((p) => p.bet_id === 'e')!.amount).toBeGreaterThanOrEqual(9000)
+  })
+
+  it('ignores malformed money values rather than poisoning the pool', () => {
+    const result = settleMarket({
+      options: [
+        { id: 'a', total_amount_bet: 1000, seed_amount: undefined as any },
+        { id: 'b', total_amount_bet: 100, seed_amount: 0 },
+      ],
+      bets: [
+        { id: 'e', user_id: 'u1', bet_option_id: 'a', amount: 'not-a-number' as any, placed_at: EARLY },
+        { id: 'l', user_id: 'u2', bet_option_id: 'a', amount: 1000, placed_at: LATE },
+        { id: 'x', user_id: 'u3', bet_option_id: 'b', amount: 100, placed_at: LATE },
+      ],
+      winningOptionId: 'a',
+      houseEdgePct: 5,
+      marketCreatedAt: CREATED,
+    })
+    if (result.kind !== 'paid') throw new Error('expected paid')
+
+    for (const p of result.payouts) {
+      expect(Number.isNaN(p.amount)).toBe(false)
+    }
+    expect(Number.isFinite(result.houseTake)).toBe(true)
+    expect(result.houseTake).toBeGreaterThanOrEqual(0)
+  })
+
   it('returns void with no refunds when there were no bets at all', () => {
     const result = settleMarket({
       options: [

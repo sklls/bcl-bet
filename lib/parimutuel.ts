@@ -15,9 +15,15 @@ export interface PoolOption {
   seed_amount: number | string
 }
 
+/** Number() coercion that never poisons a total with NaN from a malformed value. */
+const safeNum = (x: unknown): number => {
+  const n = Number(x)
+  return Number.isNaN(n) ? 0 : n
+}
+
 /** Money backing one option: real stakes plus the house seed allocated to it. */
 export function optionTotal(option: PoolOption): number {
-  return Number(option.total_amount_bet) + Number(option.seed_amount)
+  return safeNum(option.total_amount_bet) + safeNum(option.seed_amount)
 }
 
 /** Everything in the market: all stakes plus the whole house seed. */
@@ -114,7 +120,7 @@ const round2 = (n: number) => Math.round(n * 100) / 100
 function betWeight(bet: SettleBet, marketCreatedAt: string): number {
   const placed = new Date(bet.placed_at).getTime()
   const cutoff = new Date(marketCreatedAt).getTime() + EARLY_BIRD_WINDOW_MS
-  return Number(bet.amount) * (placed < cutoff ? EARLY_BIRD_WEIGHT : 1)
+  return safeNum(bet.amount) * (placed < cutoff ? EARLY_BIRD_WEIGHT : 1)
 }
 
 /**
@@ -132,7 +138,7 @@ export function settleMarket(input: SettleInput): SettleResult {
     refunds: bets.map((b) => ({
       bet_id: b.id,
       user_id: b.user_id,
-      amount: round2(Number(b.amount)),
+      amount: round2(safeNum(b.amount)),
     })),
   })
 
@@ -147,13 +153,22 @@ export function settleMarket(input: SettleInput): SettleResult {
   const optionsWithBets = new Set(bets.map((b) => b.bet_option_id))
   if (optionsWithBets.size < 2) return refundAll('single_sided')
 
-  const pool = poolTotal(options)
+  // The option rows and the bets being settled can disagree — the settle route
+  // reads them in two separate queries, so a bet landing in between produces an
+  // option total that lags the bets actually being paid. Capacity must reflect
+  // whichever is larger, or the stake-guarantee floor above can exceed what the
+  // option rows record and overpay (pool from bad option data < sum of stakes
+  // actually owed). This can only raise the capacity, never lower it, so it
+  // never changes a result where the two already agreed.
+  const betsTotal = bets.reduce((s, b) => s + safeNum(b.amount), 0)
+  const seedTotal = options.reduce((s, o) => s + safeNum(o.seed_amount), 0)
+  const pool = Math.max(poolTotal(options), betsTotal + seedTotal)
   const payoutPool = pool * (1 - houseEdgePct / 100)
 
   // The seed sits on the winning option too and takes its share, which is
   // simply never disbursed — that is how the house recovers most of the seed.
   const winningOption = options.find((o) => o.id === winningOptionId)
-  const seedOnWinner = winningOption ? Number(winningOption.seed_amount) : 0
+  const seedOnWinner = winningOption ? safeNum(winningOption.seed_amount) : 0
   const weightedStakes = winners.map((b) => betWeight(b, marketCreatedAt))
   const totalWeight = weightedStakes.reduce((s, w) => s + w, 0) + seedOnWinner
 
@@ -165,7 +180,7 @@ export function settleMarket(input: SettleInput): SettleResult {
 
   // Nobody should win a bet and end up down. If the rake would push a winner
   // below their stake, hand back the stake and let the house take less.
-  const floors = winners.map((b) => round2(Number(b.amount)))
+  const floors = winners.map((b) => round2(safeNum(b.amount)))
   payouts = payouts.map((p, i) => ({
     ...p,
     amount: Math.max(p.amount, floors[i]),
