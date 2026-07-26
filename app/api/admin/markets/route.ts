@@ -7,6 +7,7 @@ const MarketSchema = z.object({
   market_type: z.enum(['winner', 'top_scorer', 'over_under', 'live', 'custom']),
   title: z.string().min(1).max(80).optional(), // required when market_type === 'custom'
   house_edge_pct: z.number().min(0).max(20).optional(),
+  seed_amount: z.number().min(0).max(100000).optional(),
   options: z.array(z.string().min(1)).min(2), // labels for bet options
 })
 
@@ -33,23 +34,38 @@ export async function POST(request: Request) {
   const parsed = MarketSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 })
 
-  const { match_id, market_type, title, house_edge_pct, options } = parsed.data
+  const { match_id, market_type, title, house_edge_pct, seed_amount, options } = parsed.data
   if (market_type === 'custom' && !title?.trim()) {
     return NextResponse.json({ error: 'Title is required for custom markets' }, { status: 400 })
   }
   const admin = createAdminClient()
 
+  const seed = seed_amount ?? 1000
+
   // Create market
   const { data: market, error: marketErr } = await admin
     .from('markets')
-    .insert({ match_id, market_type, title: title?.trim() ?? null, house_edge_pct: house_edge_pct ?? 5 })
+    .insert({
+      match_id,
+      market_type,
+      title: title?.trim() ?? null,
+      house_edge_pct: house_edge_pct ?? 5,
+      seed_amount: seed,
+    })
     .select()
     .single()
 
   if (marketErr) return NextResponse.json({ error: marketErr.message }, { status: 500 })
 
-  // Create bet options
-  const optionRows = options.map((label) => ({ market_id: market.id, label }))
+  // Split the house seed equally across the options. Seeding each option rather
+  // than the pool as a whole is what keeps opening prices sane — an unseeded
+  // option makes the first bet on it show absurd odds.
+  const perOption = Math.round((seed / options.length) * 100) / 100
+  const optionRows = options.map((label) => ({
+    market_id: market.id,
+    label,
+    seed_amount: perOption,
+  }))
   const { error: optErr } = await admin.from('bet_options').insert(optionRows)
   if (optErr) return NextResponse.json({ error: optErr.message }, { status: 500 })
 

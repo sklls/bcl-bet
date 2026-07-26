@@ -165,7 +165,9 @@ export default async function LedgerPage() {
               <div className="text-right shrink-0">
                 <p className="text-sm text-white">
                   ₹{Number(bet.amount).toLocaleString()}
-                  <span className="text-xs text-slate ml-1">@ {Number(bet.odds_at_placement).toFixed(2)}x</span>
+                  <span className="text-xs text-slate ml-1">
+                    {bet.odds_at_placement == null ? 'pari-mutuel' : `@ ${Number(bet.odds_at_placement).toFixed(2)}x`}
+                  </span>
                 </p>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[bet.status] ?? 'text-slate'}`}>
                   {bet.status === 'won'

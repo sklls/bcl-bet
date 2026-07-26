@@ -22,7 +22,8 @@ export async function DELETE(request: Request) {
 
   const admin = createAdminClient()
 
-  // Get the bet
+  // Get the bet — read first so the 404/400 responses stay distinguishable
+  // from the RPC's generic failure.
   const { data: bet, error: fetchErr } = await admin
     .from('bets')
     .select('id, user_id, amount, status')
@@ -32,18 +33,14 @@ export async function DELETE(request: Request) {
   if (fetchErr || !bet) return NextResponse.json({ error: 'Bet not found' }, { status: 404 })
   if (bet.status !== 'pending') return NextResponse.json({ error: 'Only pending bets can be voided' }, { status: 400 })
 
-  // Refund user
-  await admin.rpc('topup_wallet', {
-    p_user_id: bet.user_id,
-    p_amount: bet.amount,
+  // One transaction: refund the wallet, void the bet, log the refund, AND
+  // take the stake back out of bet_options.total_amount_bet / markets.total_pool.
+  // Under pari-mutuel those columns are the pool that settlement prices
+  // against, so leaving them inflated made the house fund the difference.
+  const { error } = await admin.rpc('void_bet', {
+    p_bet_id: betId,
     p_description: 'Refund: bet voided by admin',
   })
-
-  // Mark bet void
-  const { error } = await admin
-    .from('bets')
-    .update({ status: 'void', settled_at: new Date().toISOString() })
-    .eq('id', betId)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

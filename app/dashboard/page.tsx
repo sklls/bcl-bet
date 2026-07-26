@@ -113,7 +113,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-white">₹{Number(bet.amount).toLocaleString()} <span className="text-xs text-slate">@ {Number(bet.odds_at_placement).toFixed(2)}x</span></p>
+                      <p className="text-sm text-white">₹{Number(bet.amount).toLocaleString()} <span className="text-xs text-slate">{bet.odds_at_placement == null ? 'pari-mutuel' : `@ ${Number(bet.odds_at_placement).toFixed(2)}x`}</span></p>
                       {bet.status === 'pending' && expectedPayout !== null ? (
                         <div>
                           <p className="text-xs text-gold font-medium">PENDING</p>

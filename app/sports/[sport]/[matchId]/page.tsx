@@ -15,7 +15,7 @@ export default async function MatchPage({ params }: { params: { sport: string; m
   const [{ data: match }, { data: { user } }] = await Promise.all([
     supabase
       .from('matches')
-      .select('*, markets(*, bet_options(*))')
+      .select('*, markets(*, bet_options(id, label, total_amount_bet, seed_amount))')
       .eq('id', params.matchId)
       .eq('sport', sport)
       .single(),

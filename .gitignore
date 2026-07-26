@@ -43,6 +43,7 @@ next-env.d.ts
 /check-db.mjs
 /check-tx.mjs
 /create-rpc.mjs
+/_reset.mjs
 /supabase/.temp/
 
 # impeccable per-session cache (regenerated locally)
