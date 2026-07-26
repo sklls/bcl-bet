@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { calculateOdds, calcPayout, formatOdds } from '@/lib/odds'
+import { projectedOdds, projectedReturn, formatOdds } from '@/lib/parimutuel'
 
 type BetOption = {
   id: string
   label: string
   total_amount_bet: number
+  seed_amount: number
 }
 
 type Market = {
@@ -43,8 +44,7 @@ export default function BetSlip({
   useEffect(() => {
     const num = parseFloat(amount)
     if (!isNaN(num) && num > 0) {
-      const odds = calculateOdds(market.bet_options, selectedOption.id, num, market.house_edge_pct)
-      setPreviewOdds(odds)
+      setPreviewOdds(projectedOdds(market.bet_options, selectedOption.id, market.house_edge_pct, num))
     } else {
       setPreviewOdds(null)
     }
@@ -97,7 +97,7 @@ export default function BetSlip({
       {isEarlyBird && (
         <div className="bg-gold/10 border border-gold/30 rounded-lg px-3 py-2 text-xs text-gold flex items-center gap-2">
           <span>⚡</span>
-          <span>Early bird! Bet now for a <strong>+10% bonus</strong> on your payout.</span>
+          <span>Early bird! Bets in the first 30 min count as <strong>up to 1.1×</strong> when the pool is shared out.</span>
         </div>
       )}
 
@@ -136,17 +136,23 @@ export default function BetSlip({
       {previewOdds !== null && parseFloat(amount) > 0 && (
         <div className="bg-baize rounded-lg p-3 text-sm space-y-1">
           <div className="flex justify-between text-slate">
-            <span>Odds</span>
+            <span>Projected odds</span>
             <span className="text-gold font-bold">{formatOdds(previewOdds)}</span>
           </div>
           <div className="flex justify-between text-slate">
             <span>Stake</span>
-            <span>₹{parseFloat(amount).toLocaleString()}</span>
+            <span>₹{parseFloat(amount).toLocaleString('en-IN')}</span>
           </div>
           <div className="flex justify-between font-semibold text-white border-t border-rail pt-1 mt-1">
-            <span>Potential return</span>
-            <span className="text-amber">₹{calcPayout(parseFloat(amount), previewOdds).toLocaleString()}</span>
+            <span>Projected return</span>
+            <span className="text-amber">
+              ~₹{projectedReturn(parseFloat(amount), previewOdds).toLocaleString('en-IN')}
+            </span>
           </div>
+          <p className="text-[11px] text-slate pt-1 leading-snug">
+            Winners share the pool. Your final payout depends on how much is
+            backing this option when the market closes, so this figure will move.
+          </p>
         </div>
       )}
 

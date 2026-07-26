@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import BetSlip from './BetSlip'
-import { calculateOdds, formatOdds } from '@/lib/odds'
+import { projectedOdds, formatOdds } from '@/lib/parimutuel'
 
 type BetOption = {
   id: string
   label: string
   total_amount_bet: number
+  seed_amount: number
 }
 
 type Market = {
@@ -83,7 +84,9 @@ export default function MarketsSection({
             prev.map((market) => ({
               ...market,
               bet_options: market.bet_options.map((o) =>
-                o.id === updated.id ? { ...o, total_amount_bet: updated.total_amount_bet } : o
+                o.id === updated.id
+                  ? { ...o, total_amount_bet: updated.total_amount_bet, seed_amount: o.seed_amount }
+                  : o
               ),
             }))
           )
@@ -135,7 +138,7 @@ export default function MarketsSection({
             <div className="px-5 pb-5">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {market.bet_options.map((option) => {
-                  const odds = calculateOdds(market.bet_options, option.id, 1, market.house_edge_pct)
+                  const odds = projectedOdds(market.bet_options, option.id, market.house_edge_pct)
                   const isSelected = selectedOption?.option.id === option.id
                   const isWinner = market.result === option.label
                   const optionBettors = marketBettors[option.id] ?? []
@@ -156,6 +159,9 @@ export default function MarketsSection({
                       <p className="text-sm font-medium text-white truncate">{option.label}</p>
                       <p className={`text-lg font-bold mt-0.5 ${isWinner ? 'text-amber' : 'text-gold'}`}>
                         {formatOdds(odds)}
+                        {market.status === 'open' && (
+                          <span className="text-[10px] font-normal text-slate ml-1">live</span>
+                        )}
                       </p>
                       <p className="text-xs text-slate mt-0.5">
                         Pool: ₹{Number(option.total_amount_bet).toLocaleString('en-IN')}
