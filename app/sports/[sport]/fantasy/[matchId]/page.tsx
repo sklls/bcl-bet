@@ -6,6 +6,7 @@ import { SPORTS, SportType, hasFantasy } from '@/lib/sports'
 import { resolveSquad } from '@/lib/fantasy/squad'
 import TeamBuilder from '@/components/fantasy/TeamBuilder'
 import ContestLeaderboard from '@/components/fantasy/ContestLeaderboard'
+import DataError from '@/components/ui/DataError'
 import { formatCredits } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
@@ -22,12 +23,18 @@ export default async function ContestPage({
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: match } = await admin
+  const { data: match, error: matchErr } = await admin
     .from('matches')
     .select('id, sport, team_a, team_b, match_date, venue')
     .eq('id', params.matchId)
     .single()
 
+  // A failed read is not a missing fixture. PGRST116 is "no rows", which is a
+  // genuine 404; anything else is our problem and must not masquerade as one.
+  if (matchErr && matchErr.code !== 'PGRST116') {
+    console.error('[fantasy/contest] match query failed:', matchErr)
+    return <div className="space-y-6"><DataError what="this fixture" /></div>
+  }
   if (!match || match.sport !== sport) notFound()
 
   const header = (
@@ -42,11 +49,16 @@ export default async function ContestPage({
     </div>
   )
 
-  const { data: contest } = await admin
+  const { data: contest, error: contestErr } = await admin
     .from('contests')
     .select('id, entry_fee, status, prize_pool, locks_at')
     .eq('match_id', params.matchId)
     .maybeSingle()
+
+  if (contestErr) {
+    console.error('[fantasy/contest] contest query failed:', contestErr)
+    return <div className="space-y-6">{header}<DataError what="this contest" /></div>
+  }
 
   if (!contest) {
     return (
@@ -98,12 +110,21 @@ export default async function ContestPage({
   const { data: profile } = await admin
     .from('profiles').select('wallet_balance').eq('id', user.id).single()
 
-  const { data: entry } = await admin
+  const { data: entry, error: entryErr } = await admin
     .from('contest_entries')
     .select('id, captain_id, vice_captain_id, entry_players(player_id)')
     .eq('contest_id', contest.id)
     .eq('user_id', user.id)
     .maybeSingle()
+
+  // The most damaging one to swallow: a failed lookup would render an empty
+  // builder to someone who has already entered, as though their XI were gone.
+  // Re-submitting would not double-charge, but it would silently replace a
+  // lineup they had already settled on.
+  if (entryErr) {
+    console.error('[fantasy/contest] entry query failed:', entryErr)
+    return <div className="space-y-6">{header}<DataError what="your entry" /></div>
+  }
 
   return (
     <div className="space-y-6">

@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
 import { SPORTS, SportType, hasFantasy } from '@/lib/sports'
 import { formatCredits } from '@/lib/credits'
+import DataError from '@/components/ui/DataError'
 
 export const dynamic = 'force-dynamic'
 
@@ -80,6 +81,18 @@ function Section({ title, tone, contests, sport }: {
   )
 }
 
+function PageHeader({ sport }: { sport: SportType }) {
+  return (
+    <div className="flex items-center gap-3">
+      <Link href={`/sports/${sport}`} className="text-slate hover:text-white text-sm transition-colors">
+        ← {SPORTS[sport].label}
+      </Link>
+      <span className="text-rail">/</span>
+      <h1 className="text-2xl font-bold text-white">🏆 Fantasy</h1>
+    </div>
+  )
+}
+
 export default async function FantasyContestsPage({ params }: { params: { sport: string } }) {
   const sport = params.sport as SportType
   if (!SPORTS[sport]) notFound()
@@ -88,11 +101,23 @@ export default async function FantasyContestsPage({ params }: { params: { sport:
   // Entrant counts are an aggregate over contest_entries, which RLS keeps
   // private per user — read them with the admin client. No lineup is exposed.
   const admin = createAdminClient()
-  const { data } = await admin
+  const { data, error } = await admin
     .from('contests')
     .select('id, match_id, entry_fee, prize_pool, status, locks_at, matches!inner(sport, team_a, team_b, match_date, venue), contest_entries(count)')
     .eq('matches.sport', sport)
     .order('locks_at', { ascending: true })
+
+  // Never let a failed read fall through to the empty state — "no contests
+  // yet" would be a lie, and an unfalsifiable one.
+  if (error) {
+    console.error('[fantasy/contests] query failed:', error)
+    return (
+      <div className="space-y-8">
+        <PageHeader sport={sport} />
+        <DataError what="the contest list" />
+      </div>
+    )
+  }
 
   const contests: ContestRow[] = (data ?? []).map(c => {
     const m = c.matches as unknown as { team_a: string; team_b: string; match_date: string; venue: string | null }
@@ -118,13 +143,7 @@ export default async function FantasyContestsPage({ params }: { params: { sport:
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-3">
-        <Link href={`/sports/${sport}`} className="text-slate hover:text-white text-sm transition-colors">
-          ← {SPORTS[sport].label}
-        </Link>
-        <span className="text-rail">/</span>
-        <h1 className="text-2xl font-bold text-white">🏆 Fantasy</h1>
-      </div>
+      <PageHeader sport={sport} />
 
       <Section title="Open for entry" tone="text-amber"        contests={open}      sport={sport} />
       <Section title="In play"        tone="text-crimson-light" contests={inPlay}    sport={sport} />

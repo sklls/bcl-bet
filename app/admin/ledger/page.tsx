@@ -2,6 +2,7 @@ import { createAdminClient, createServerSupabaseClient } from '@/lib/supabase-se
 import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
 import { formatCredits, formatCreditsSigned } from '@/lib/credits'
+import DataError from '@/components/ui/DataError'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export default async function LedgerPage() {
   const admin = createAdminClient()
 
   // Fetch all bets with full context
-  const { data: bets } = await admin
+  const { data: bets, error: betsErr } = await admin
     .from('bets')
     .select(`
       id, amount, odds_at_placement, status, payout, placed_at, settled_at,
@@ -33,6 +34,18 @@ export default async function LedgerPage() {
       bet_options(label)
     `)
     .order('placed_at', { ascending: false })
+
+  // An empty ledger and a broken one look identical, and this is the page an
+  // admin uses to check the books. It must never quietly show zero.
+  if (betsErr) {
+    console.error('[admin/ledger] bets query failed:', betsErr)
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-white">Ledger</h1>
+        <DataError what="the ledger" />
+      </div>
+    )
+  }
 
   // Aggregate stats per user
   const userMap: Record<string, {
