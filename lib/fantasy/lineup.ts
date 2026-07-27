@@ -68,41 +68,43 @@ export function validateLineup(
   const { playerIds, captainId, viceCaptainId } = selection
   const byId = new Map(pool.map(p => [p.id, p]))
 
-  const unique = new Set(playerIds)
-  if (unique.size !== playerIds.length) {
+  // Plain arrays and records throughout rather than iterating Sets and Maps:
+  // the app compiles at the default ES5 target, where for..of and spread over
+  // those needs downlevelIteration.
+  const unique = playerIds.filter((id, i) => playerIds.indexOf(id) === i)
+  const has = (id: string) => unique.indexOf(id) !== -1
+
+  if (unique.length !== playerIds.length) {
     errors.push({ code: 'DUPLICATE_PLAYER', message: 'The same player is picked more than once.' })
   }
-  if (unique.size !== SQUAD_SIZE) {
-    errors.push({ code: 'SQUAD_SIZE', message: `Pick exactly ${SQUAD_SIZE} players — you have ${unique.size}.` })
+  if (unique.length !== SQUAD_SIZE) {
+    errors.push({ code: 'SQUAD_SIZE', message: `Pick exactly ${SQUAD_SIZE} players — you have ${unique.length}.` })
   }
 
-  const unknown = [...unique].filter(id => !byId.has(id))
+  const unknown = unique.filter(id => !byId.has(id))
   if (unknown.length) {
     errors.push({ code: 'UNKNOWN_PLAYER', message: 'A pick is not in either squad for this match.' })
   }
 
-  const cost = lineupCost([...unique], pool)
+  const cost = lineupCost(unique, pool)
   if (cost > CREDIT_BUDGET) {
     errors.push({ code: 'OVER_BUDGET', message: `Over budget: ${cost} of ${CREDIT_BUDGET} credits.` })
   }
 
-  const perTeam = new Map<string, number>()
+  const perTeam: Record<string, number> = {}
   for (const id of unique) {
     const p = byId.get(id)
     if (!p) continue
-    perTeam.set(p.team_id, (perTeam.get(p.team_id) ?? 0) + 1)
+    perTeam[p.team_id] = (perTeam[p.team_id] ?? 0) + 1
   }
-  for (const [, count] of perTeam) {
-    if (count > MAX_PER_TEAM) {
-      errors.push({ code: 'MAX_PER_TEAM', message: `No more than ${MAX_PER_TEAM} players from one team.` })
-      break
-    }
+  if (Object.keys(perTeam).some(t => perTeam[t] > MAX_PER_TEAM)) {
+    errors.push({ code: 'MAX_PER_TEAM', message: `No more than ${MAX_PER_TEAM} players from one team.` })
   }
 
-  if (!unique.has(captainId)) {
+  if (!has(captainId)) {
     errors.push({ code: 'CAPTAIN_NOT_IN_SQUAD', message: 'The captain must be one of your 11.' })
   }
-  if (!unique.has(viceCaptainId)) {
+  if (!has(viceCaptainId)) {
     errors.push({ code: 'VICE_NOT_IN_SQUAD', message: 'The vice-captain must be one of your 11.' })
   }
   if (captainId && captainId === viceCaptainId) {
@@ -110,14 +112,14 @@ export function validateLineup(
   }
 
   if (sport === 'football') {
-    const perRole = new Map<string, number>()
+    const perRole: Record<string, number> = {}
     for (const id of unique) {
       const p = byId.get(id)
       if (!p) continue
-      perRole.set(p.role, (perRole.get(p.role) ?? 0) + 1)
+      perRole[p.role] = (perRole[p.role] ?? 0) + 1
     }
     for (const [role, { min, max }] of Object.entries(FOOTBALL_QUOTAS)) {
-      const have = perRole.get(role) ?? 0
+      const have = perRole[role] ?? 0
       if (have < min || have > max) {
         errors.push({
           code: `QUOTA_${role}`,
