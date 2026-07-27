@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase'
 import BetSlip from './BetSlip'
 import { projectedOdds, formatOdds } from '@/lib/parimutuel'
+import { formatCredits } from '@/lib/credits'
 
 type BetOption = {
   id: string
@@ -164,7 +165,7 @@ export default function MarketsSection({
                         )}
                       </p>
                       <p className="text-xs text-slate mt-0.5">
-                        Pool: ₹{Number(option.total_amount_bet).toLocaleString('en-IN')}
+                        Pool: {formatCredits(Number(option.total_amount_bet))}
                       </p>
                       {optionBettors.length > 0 && (
                         <div className="mt-1.5 pt-1.5 border-t border-rail/50 flex flex-wrap gap-x-1.5 gap-y-0.5">

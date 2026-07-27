@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
+import { formatCredits, formatCreditsSigned } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,7 +68,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">Balance</p>
-          <p className="text-xl font-bold text-amber">₹{Number(profile?.wallet_balance ?? 0).toLocaleString()}</p>
+          <p className="text-xl font-bold text-amber">{formatCredits(Number(profile?.wallet_balance ?? 0))}</p>
         </div>
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">Bets</p>
@@ -84,7 +85,7 @@ export default async function DashboardPage() {
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">Net Profit</p>
           <p className={`text-xl font-bold ${netProfit >= 0 ? 'text-amber' : 'text-crimson-light'}`}>
-            {netProfit >= 0 ? '+' : ''}₹{netProfit.toLocaleString()}
+            {formatCreditsSigned(netProfit)}
           </p>
           {roi !== null && <p className="text-xs text-slate mt-0.5">ROI: {roi}%</p>}
         </div>
@@ -113,17 +114,17 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-white">₹{Number(bet.amount).toLocaleString()} <span className="text-xs text-slate">{bet.odds_at_placement == null ? 'pari-mutuel' : `@ ${Number(bet.odds_at_placement).toFixed(2)}x`}</span></p>
+                      <p className="text-sm text-white">{formatCredits(Number(bet.amount))} <span className="text-xs text-slate">{bet.odds_at_placement == null ? 'pari-mutuel' : `@ ${Number(bet.odds_at_placement).toFixed(2)}x`}</span></p>
                       {bet.status === 'pending' && expectedPayout !== null ? (
                         <div>
                           <p className="text-xs text-gold font-medium">PENDING</p>
                           <p className="text-xs text-slate">
-                            Est. return: <span className="text-gold font-semibold">₹{expectedPayout.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                            Est. return: <span className="text-gold font-semibold">{formatCredits(expectedPayout)}</span>
                           </p>
                         </div>
                       ) : (
                         <p className={`text-sm font-semibold ${BET_STATUS_COLORS[bet.status] ?? 'text-slate'}`}>
-                          {bet.status === 'won' ? `+₹${Number(bet.payout).toLocaleString()}` : bet.status.toUpperCase()}
+                          {bet.status === 'won' ? formatCreditsSigned(Number(bet.payout)) : bet.status.toUpperCase()}
                         </p>
                       )}
                     </div>
@@ -147,7 +148,7 @@ export default async function DashboardPage() {
                   <p className="text-xs text-slate">{format(new Date(tx.created_at), 'dd MMM yyyy, h:mm a')}</p>
                 </div>
                 <p className={`text-sm font-semibold ${TX_COLORS[tx.type] ?? 'text-slate'}`}>
-                  {tx.amount > 0 ? '+' : ''}₹{Number(tx.amount).toLocaleString()}
+                  {formatCreditsSigned(Number(tx.amount))}
                 </p>
               </div>
             ))}

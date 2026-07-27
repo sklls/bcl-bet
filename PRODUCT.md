@@ -16,7 +16,7 @@ A second, smaller audience is the admins who run the tournament — creating mat
 
 ## Product Purpose
 
-PrimeStake is a private, multi-sport betting platform for a closed league. It exists to make betting on your own tournament feel like a real, professional sportsbook rather than a play-money side project. Success is engagement: people place bets often, come back to check live markets and standings, and spread their play across all six sports — not just cricket.
+PrimeStake is a private, multi-sport prediction game for a closed league, played entirely with in-game credits that have no cash value. It exists to make predicting your own tournament feel like a real, professional sportsbook rather than a throwaway side project. Success is engagement: people predict often, come back to check live markets, fantasy contests and standings, and spread their play across all six sports — not just cricket.
 
 ## Positioning
 

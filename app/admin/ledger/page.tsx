@@ -1,6 +1,7 @@
 import { createAdminClient, createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
+import { formatCredits, formatCreditsSigned } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,15 +79,15 @@ export default async function LedgerPage() {
         </div>
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">Total Staked</p>
-          <p className="text-2xl font-bold text-white">₹{totalStaked.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-white">{formatCredits(totalStaked)}</p>
         </div>
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">Total Paid Out</p>
-          <p className="text-2xl font-bold text-green-400">₹{totalPaidOut.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-green-400">{formatCredits(totalPaidOut)}</p>
         </div>
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">House Edge</p>
-          <p className="text-2xl font-bold text-gold">₹{houseEdge.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-gold">{formatCredits(houseEdge)}</p>
         </div>
       </div>
 
@@ -112,10 +113,10 @@ export default async function LedgerPage() {
                 return (
                   <tr key={u.name} className="border-b border-rail/50 hover:bg-table/50">
                     <td className="py-2 pr-4 font-medium text-white">{u.name}</td>
-                    <td className="py-2 pr-4 text-right text-ink">₹{u.totalStaked.toLocaleString()}</td>
-                    <td className="py-2 pr-4 text-right text-green-400">₹{u.totalPayout.toLocaleString()}</td>
+                    <td className="py-2 pr-4 text-right text-ink">{formatCredits(u.totalStaked)}</td>
+                    <td className="py-2 pr-4 text-right text-green-400">{formatCredits(u.totalPayout)}</td>
                     <td className={`py-2 pr-4 text-right font-semibold ${net >= 0 ? 'text-green-400' : 'text-crimson-light'}`}>
-                      {net >= 0 ? '+' : ''}₹{net.toLocaleString()}
+                      {formatCreditsSigned(net)}
                     </td>
                     <td className="py-2 pr-4 text-right text-green-400">{u.won}</td>
                     <td className="py-2 pr-4 text-right text-crimson-light">{u.lost}</td>
@@ -164,14 +165,14 @@ export default async function LedgerPage() {
               </div>
               <div className="text-right shrink-0">
                 <p className="text-sm text-white">
-                  ₹{Number(bet.amount).toLocaleString()}
+                  {formatCredits(Number(bet.amount))}
                   <span className="text-xs text-slate ml-1">
                     {bet.odds_at_placement == null ? 'pari-mutuel' : `@ ${Number(bet.odds_at_placement).toFixed(2)}x`}
                   </span>
                 </p>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${STATUS_COLORS[bet.status] ?? 'text-slate'}`}>
                   {bet.status === 'won'
-                    ? `+₹${Number(bet.payout).toLocaleString()}`
+                    ? formatCreditsSigned(Number(bet.payout))
                     : bet.status.toUpperCase()}
                 </span>
               </div>

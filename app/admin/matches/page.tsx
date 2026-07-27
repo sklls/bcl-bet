@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { SPORTS, ALL_SPORTS, SPORT_MARKETS, PLAYER_PICKER_MARKETS, SportType, hasFantasy } from '@/lib/sports'
 import StatEntry from '@/components/admin/StatEntry'
 import type { FantasySport } from '@/lib/fantasy/scoring'
+import { formatCredits } from '@/lib/credits'
 
 type Bet = { id: string; user_id: string; amount: number; status: string; placed_at: string; profiles?: { display_name: string } }
 type BetOption = { id: string; label: string; total_amount_bet: number; bets?: Bet[] }
@@ -107,7 +108,7 @@ export default function AdminMatchesPage() {
   async function settleContest(contest: Contest, matchName: string) {
     const warning = contest.entrants < 4
       ? `Void the fantasy contest for ${matchName}?\n\nFewer than 4 entrants — every entry is refunded in full. This is FINAL.`
-      : `Settle the fantasy contest for ${matchName}?\n\nThis is FINAL: prizes are paid into real wallet balances and cannot be reversed. Settle only once the stats are correct.`
+      : `Settle the fantasy contest for ${matchName}?\n\nThis is FINAL: prize credits are paid into player balances and cannot be reversed. Settle only once the stats are correct.`
     if (!confirm(warning)) return
 
     const res = await fetch('/api/admin/fantasy/settle', {
@@ -119,7 +120,7 @@ export default function AdminMatchesPage() {
     if (res.ok) {
       setMsg(d.void
         ? `Contest voided — ${d.reason}`
-        : `Settled — ₹${Number(d.total_paid).toLocaleString('en-IN')} paid across ${d.settled} entries`)
+        : `Settled — ${formatCredits(Number(d.total_paid))} paid across ${d.settled} entries`)
       loadContests()
     } else setMsg(d.error ?? 'Error')
   }
@@ -282,10 +283,10 @@ export default function AdminMatchesPage() {
   }
 
   async function voidBet(betId: string, amount: number) {
-    if (!confirm(`Void this ₹${amount} bet and refund the user?`)) return
+    if (!confirm(`Void this ${formatCredits(amount)} bet and refund the user?`)) return
     const res = await fetch(`/api/admin/bets?id=${betId}`, { method: 'DELETE' })
     const d = await res.json()
-    if (res.ok) { setMsg(`Bet voided. ₹${d.refunded} refunded.`); loadMatches() }
+    if (res.ok) { setMsg(`Bet voided. ${formatCredits(d.refunded)} refunded.`); loadMatches() }
     else setMsg(d.error ?? 'Error voiding bet')
   }
 
@@ -556,7 +557,7 @@ export default function AdminMatchesPage() {
                                 className="text-slate hover:text-slate text-xs"
                               >✎</button>
                               <span className="text-xs text-slate">
-                                {market.bet_options?.length ?? 0} options · ₹{(market.bet_options ?? []).reduce((s, o) => s + Number(o.total_amount_bet), 0).toLocaleString('en-IN')} staked
+                                {market.bet_options?.length ?? 0} options · {formatCredits((market.bet_options ?? []).reduce((s, o) => s + Number(o.total_amount_bet), 0))} staked
                               </span>
                             </>
                           )}
@@ -595,7 +596,7 @@ export default function AdminMatchesPage() {
                               <div className="flex items-center justify-between mb-2">
                                 <div>
                                   <p className="text-xs font-medium text-white">{opt.label}</p>
-                                  <p className="text-xs text-slate">₹{Number(opt.total_amount_bet).toLocaleString()} total</p>
+                                  <p className="text-xs text-slate">{formatCredits(Number(opt.total_amount_bet))} total</p>
                                 </div>
                                 {(market.status === 'closed' || market.status === 'open') && (
                                   <button
@@ -611,7 +612,7 @@ export default function AdminMatchesPage() {
                                   {opt.bets.filter(b => b.status !== 'void').map(bet => (
                                     <div key={bet.id} className="flex items-center justify-between text-xs">
                                       <span className="text-slate">
-                                        {bet.profiles?.display_name ?? bet.user_id.slice(0, 8)} — ₹{Number(bet.amount).toLocaleString()}
+                                        {bet.profiles?.display_name ?? bet.user_id.slice(0, 8)} — {formatCredits(Number(bet.amount))}
                                         <span className={`ml-1 ${bet.status === 'won' ? 'text-amber' : bet.status === 'lost' ? 'text-crimson-light' : 'text-gold'}`}>
                                           ({bet.status})
                                         </span>
@@ -714,9 +715,9 @@ export default function AdminMatchesPage() {
                             done ? 'text-slate' : locked ? 'text-gold' : 'text-amber'
                           }`}>{done ? contest.status : locked ? 'locked' : 'open'}</span>
                         </span>
-                        <span>Entry <span className="text-white">₹{contest.entry_fee.toLocaleString('en-IN')}</span></span>
+                        <span>Entry <span className="text-white">{formatCredits(contest.entry_fee)}</span></span>
                         <span>Entrants <span className="text-white">{contest.entrants}</span></span>
-                        <span>Pool <span className="text-gold">₹{contest.prize_pool.toLocaleString('en-IN')}</span></span>
+                        <span>Pool <span className="text-gold">{formatCredits(contest.prize_pool)}</span></span>
                         <span>Locks {format(new Date(contest.locks_at), 'dd MMM, h:mm a')}</span>
                       </div>
                     )}

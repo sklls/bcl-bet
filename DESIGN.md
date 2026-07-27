@@ -167,7 +167,7 @@ This system is **flat by structure**. There are no drop shadows anywhere. Depth 
 - **Secondary / Ghost:** Raised Navy (#1E2E52) fill, Muted Slate text; hovers to Rail Blue (#243568). Used for Cancel and low-stakes actions. Always paired *beside* a primary, never competing with it.
 
 ### Chips
-- **Quick-amount chips** (₹50 / ₹100 / ₹200 / ₹500): Raised Navy fill, Muted Slate text, small radius (4px / rounded), full-width flex row. Hover to Rail Blue.
+- **Quick-amount chips** (50 / 100 / 200 / 500 CR): Raised Navy fill, Muted Slate text, small radius (4px / rounded), full-width flex row. Hover to Rail Blue.
 - **Status chips:** Pill-shaped (rounded-full), tinted background at ~20% opacity of the state color over its own text color — amber for "Betting Open", Rail Blue/Muted Slate for "Settled", yellow for "Closed". Never a solid fill.
 
 ### Cards / Containers

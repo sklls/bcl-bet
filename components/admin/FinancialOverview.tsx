@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { formatCredits } from '@/lib/credits'
 
 type Props = {
   totalCashIn: number
@@ -24,7 +25,7 @@ export default function FinancialOverview({
   async function handleReset(type: 'cash' | 'season') {
     if (type === 'cash') {
       if (!window.confirm(
-        'Reset "Total Cash Collected" to ₹0?\n\nThis deletes all top-up transaction records. Wallets and bet history are NOT affected.'
+        'Reset "Total Credits Issued" to 0 CR?\n\nThis deletes all top-up transaction records. Wallets and bet history are NOT affected.'
       )) return
 
       setLoading('cash')
@@ -37,7 +38,7 @@ export default function FinancialOverview({
         })
         const data = await res.json()
         if (res.ok) {
-          setMsg('✅ Cash collected counter reset to ₹0.')
+          setMsg('✅ Credits-issued counter reset to 0 CR.')
           setMsgType('success')
           setTimeout(() => window.location.reload(), 800)
         } else {
@@ -114,23 +115,23 @@ export default function FinancialOverview({
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-table border border-rail rounded-xl p-4">
-          <p className="text-xs text-slate mb-1">Total Cash Collected</p>
-          <p className="text-xl font-bold text-slate">₹{totalCashIn.toLocaleString('en-IN')}</p>
+          <p className="text-xs text-slate mb-1">Total Credits Issued</p>
+          <p className="text-xl font-bold text-slate">{formatCredits(totalCashIn)}</p>
           <p className="text-xs text-slate mt-1">via top-ups</p>
         </div>
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">Total Staked</p>
-          <p className="text-xl font-bold text-white">₹{totalStaked.toLocaleString('en-IN')}</p>
+          <p className="text-xl font-bold text-white">{formatCredits(totalStaked)}</p>
           <p className="text-xs text-slate mt-1">settled bets only</p>
         </div>
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">Total Paid Out</p>
-          <p className="text-xl font-bold text-amber">₹{totalPaidOut.toLocaleString('en-IN')}</p>
+          <p className="text-xl font-bold text-amber">{formatCredits(totalPaidOut)}</p>
           <p className="text-xs text-slate mt-1">to winners</p>
         </div>
         <div className="bg-table border border-rail rounded-xl p-4">
           <p className="text-xs text-slate mb-1">House Edge Kept</p>
-          <p className="text-xl font-bold text-gold">₹{houseEdge.toLocaleString('en-IN')}</p>
+          <p className="text-xl font-bold text-gold">{formatCredits(houseEdge)}</p>
           <p className="text-xs text-slate mt-1">{houseEdgePct}% of staked</p>
         </div>
       </div>
@@ -148,8 +149,8 @@ export default function FinancialOverview({
             />
           </div>
           <div className="flex justify-between text-xs mt-2">
-            <span className="text-amber">₹{totalPaidOut.toLocaleString('en-IN')} paid out</span>
-            <span className="text-gold">₹{houseEdge.toLocaleString('en-IN')} house edge</span>
+            <span className="text-amber">{formatCredits(totalPaidOut)} paid out</span>
+            <span className="text-gold">{formatCredits(houseEdge)} house edge</span>
           </div>
         </div>
       )}

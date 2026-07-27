@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   const EPOCH = '2000-01-01'
 
   if (type === 'cash') {
-    // Delete all positive topup transactions — resets "Total Cash Collected" to 0
+    // Delete all positive topup transactions — resets "Total Credits Issued" to 0
     const { error } = await admin
       .from('transactions')
       .delete()
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     .gte('placed_at', EPOCH)
   if (e2) errors.push('bets: ' + e2.message)
 
-  // 3. Delete ALL transactions (clears Total Cash Collected)
+  // 3. Delete ALL transactions (clears Total Credits Issued)
   const { error: e3 } = await admin
     .from('transactions')
     .delete()

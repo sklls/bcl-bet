@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase-server'
+import { formatCredits } from '@/lib/credits'
 
 const TopupSchema = z.object({
   target_user_id: z.string().uuid(),
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
   const { error } = await admin.rpc('topup_wallet', {
     p_user_id: target_user_id,
     p_amount: amount,
-    p_description: description ?? `Manual top-up: ₹${amount}`,
+    p_description: description ?? `Manual top-up: ${formatCredits(amount)}`,
   })
 
   if (error) {

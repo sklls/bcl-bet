@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { formatCredits } from '@/lib/credits'
 
 type User = {
   id: string
@@ -40,7 +41,7 @@ export default function AdminUsersPage() {
       }),
     })
     if (res.ok) {
-      setMsg(`Topped up ₹${amount} for ${selected.display_name}`)
+      setMsg(`Topped up ${formatCredits(amount)} for ${selected.display_name}`)
       setMsgType('success')
       setAmount('')
       setDescription('')
@@ -54,11 +55,11 @@ export default function AdminUsersPage() {
   }
 
   async function handleReset(user: User) {
-    if (!confirm(`Reset ${user.display_name}'s wallet to ₹0? This cannot be undone.`)) return
+    if (!confirm(`Reset ${user.display_name}'s wallet to 0 CR? This cannot be undone.`)) return
     setMsg('')
     const res = await fetch(`/api/admin/users?id=${user.id}`, { method: 'DELETE' })
     if (res.ok) {
-      setMsg(`Wallet reset to ₹0 for ${user.display_name}`)
+      setMsg(`Wallet reset to 0 CR for ${user.display_name}`)
       setMsgType('success')
       loadUsers()
     } else {
@@ -74,7 +75,7 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">User Wallets</h1>
-        <p className="text-slate text-sm mt-1">Top up user balances after receiving cash</p>
+        <p className="text-slate text-sm mt-1">Issue in-game credits to a player</p>
       </div>
 
       {msg && (
@@ -91,12 +92,12 @@ export default function AdminUsersPage() {
           <h2 className="font-semibold text-white">
             Top up: <span className="text-green-400">{selected.display_name}</span>
           </h2>
-          <p className="text-sm text-slate">Current balance: ₹{Number(selected.wallet_balance).toLocaleString()}</p>
+          <p className="text-sm text-slate">Current balance: {formatCredits(Number(selected.wallet_balance))}</p>
           <input
             required
             type="number"
             min="1"
-            placeholder="Amount (₹)"
+            placeholder="Amount (CR)"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             className="w-full px-3 py-2 bg-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -109,7 +110,7 @@ export default function AdminUsersPage() {
           />
           <div className="flex gap-2">
             <button type="submit" className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
-              Add ₹{amount || '0'} to Wallet
+              Add {formatCredits(amount || '0')} to Wallet
             </button>
             <button type="button" onClick={() => setSelected(null)} className="px-4 py-2 bg-raised text-white rounded-lg text-sm">
               Cancel
@@ -136,7 +137,7 @@ export default function AdminUsersPage() {
                   <p className="text-xs text-slate capitalize">{u.role}</p>
                 </td>
                 <td className="px-4 py-3 text-right font-semibold text-green-400">
-                  ₹{Number(u.wallet_balance).toLocaleString()}
+                  {formatCredits(Number(u.wallet_balance))}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-2">

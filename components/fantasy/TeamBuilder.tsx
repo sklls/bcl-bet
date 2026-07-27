@@ -7,6 +7,7 @@ import {
   type SelectablePlayer, type LineupError,
 } from '@/lib/fantasy/lineup'
 import type { FantasySport } from '@/lib/fantasy/scoring'
+import { formatCredits } from '@/lib/credits'
 
 type Team = { id: string; name: string }
 
@@ -16,8 +17,6 @@ type ExistingEntry = {
   captain_id: string | null
   vice_captain_id: string | null
 }
-
-const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`
 
 export default function TeamBuilder({
   contestId, entryFee, sport, teams, players, balance, existingEntry,
@@ -127,7 +126,7 @@ export default function TeamBuilder({
     }
 
     setEntered(true)
-    setFlash(json.charged ? `You're in — ${inr(entryFee)} entry` : 'Lineup updated')
+    setFlash(json.charged ? `You're in — ${formatCredits(entryFee)} entry` : 'Lineup updated')
   }
 
   const overBudget = cost > CREDIT_BUDGET
@@ -139,7 +138,7 @@ export default function TeamBuilder({
       <div className="sticky top-0 z-10 bg-baize border border-rail rounded-xl p-4 space-y-2">
         <div className="flex items-center justify-between text-sm">
           <span className={overBudget ? 'text-crimson-light font-semibold' : 'text-white font-semibold'}>
-            {cost} / {CREDIT_BUDGET} credits
+            {cost} / {CREDIT_BUDGET} squad credits
           </span>
           <span className={selected.length === SQUAD_SIZE ? 'text-amber font-semibold' : 'text-slate'}>
             {selected.length}/{SQUAD_SIZE} picked
@@ -152,7 +151,7 @@ export default function TeamBuilder({
           />
         </div>
         <p className={`text-xs ${overBudget ? 'text-crimson-light' : 'text-slate'}`}>
-          {overBudget ? `Over budget by ${Math.abs(remaining)}` : `${remaining} credits left`}
+          {overBudget ? `Over budget by ${Math.abs(remaining)}` : `${remaining} squad credits left`}
         </p>
       </div>
 
@@ -265,13 +264,13 @@ export default function TeamBuilder({
       <div className="bg-table border border-rail rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate">Entry fee</span>
-          <span className="font-semibold text-white">{inr(entryFee)}</span>
+          <span className="font-semibold text-white">{formatCredits(entryFee)}</span>
         </div>
         {balance !== null && (
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate">Your balance</span>
             <span className={`font-semibold ${needsFunds ? 'text-crimson-light' : 'text-white'}`}>
-              {inr(balance)}
+              {formatCredits(balance)}
             </span>
           </div>
         )}
@@ -289,7 +288,7 @@ export default function TeamBuilder({
           {saving ? 'Saving…'
             : needsFunds ? 'Not enough balance'
             : entered ? 'Update lineup'
-            : `Join for ${inr(entryFee)}`}
+            : `Join for ${formatCredits(entryFee)}`}
         </button>
 
         {entered && (

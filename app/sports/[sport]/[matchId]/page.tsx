@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import Link from 'next/link'
 import MarketsSection from '@/components/betting/MarketsSection'
 import { SPORTS, SportType } from '@/lib/sports'
+import { formatCredits } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
 
@@ -81,7 +82,7 @@ export default async function MatchPage({ params }: { params: { sport: string; m
         {user && userBalance !== null && (
           <div className="bg-table border border-rail rounded-lg px-4 py-2 mb-4 flex items-center justify-between">
             <span className="text-sm text-slate">Your balance</span>
-            <span className="font-bold text-amber">₹{userBalance.toLocaleString()}</span>
+            <span className="font-bold text-amber">{formatCredits(userBalance)}</span>
           </div>
         )}
 

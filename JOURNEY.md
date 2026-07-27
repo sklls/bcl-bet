@@ -6,7 +6,7 @@ A detailed account of how this platform was conceived, built, broken, fixed, and
 
 ## The Idea
 
-The BCL is an internal cricket tournament played among MBA students. Watching matches was fun, but we wanted people to have more skin in the game — not real gambling, but a fun virtual economy where everyone gets a starting wallet and bets with virtual rupees.
+The BCL is an internal cricket tournament played among MBA students. Watching matches was fun, but we wanted people to have more skin in the game — not real gambling, but a fun in-game economy where everyone gets a starting balance of credits (CR) that have no cash value and cannot be bought or cashed out.
 
 The goals were simple:
 - Players should be able to bet on match outcomes
@@ -139,7 +139,7 @@ We built dedicated admin pages for all of this — no SQL required.
 
 ### The Financial Overview Bug
 
-The admin dashboard showed financial stats: total cash in, total staked, total paid out, and house edge. This originally used a Postgres RPC function `get_financial_overview()`.
+The admin dashboard showed financial stats: total credits issued, total staked, total paid out, and house edge. This originally used a Postgres RPC function `get_financial_overview()`.
 
 The problem: the function's results were being cached by Vercel's edge network. Refreshing the page showed stale numbers for minutes at a time. Admins were confused whether settlements were working.
 

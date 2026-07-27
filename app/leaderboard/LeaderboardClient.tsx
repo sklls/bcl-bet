@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
+import { formatCredits } from '@/lib/credits'
 
 type Match = {
   id: string
@@ -129,7 +130,7 @@ export default function LeaderboardClient({
                   </td>
                   <td className="px-5 py-3.5 font-medium text-white">{p.display_name}</td>
                   <td className="px-5 py-3.5 text-right font-semibold text-amber">
-                    ₹{Number(p.total_winnings).toLocaleString('en-IN')}
+                    {formatCredits(Number(p.total_winnings))}
                   </td>
                   <td className="px-5 py-3.5 text-right text-slate">
                     <span className="text-amber">{p.bets_won}</span>
@@ -137,7 +138,7 @@ export default function LeaderboardClient({
                     <span className="text-crimson-light">{Number(p.total_bets) - Number(p.bets_won)}</span>
                   </td>
                   <td className="px-5 py-3.5 text-right text-slate">
-                    ₹{Number(p.wallet_balance).toLocaleString('en-IN')}
+                    {formatCredits(Number(p.wallet_balance))}
                   </td>
                 </tr>
               ))}
@@ -198,13 +199,13 @@ export default function LeaderboardClient({
                       </td>
                       <td className="px-5 py-3.5 font-medium text-white">{p.display_name}</td>
                       <td className="px-5 py-3.5 text-right text-slate">
-                        ₹{Number(p.total_staked).toLocaleString('en-IN')}
+                        {formatCredits(Number(p.total_staked))}
                       </td>
                       <td className="px-5 py-3.5 text-right text-amber">
-                        ₹{Number(p.total_winnings).toLocaleString('en-IN')}
+                        {formatCredits(Number(p.total_winnings))}
                       </td>
                       <td className={`px-5 py-3.5 text-right font-semibold ${p.net_pl >= 0 ? 'text-amber' : 'text-crimson-light'}`}>
-                        {p.net_pl >= 0 ? '+' : ''}₹{Number(p.net_pl).toLocaleString('en-IN')}
+                        {p.net_pl >= 0 ? '+' : ''}{formatCredits(Number(p.net_pl))}
                       </td>
                       <td className="px-5 py-3.5 text-right text-slate">
                         <span className="text-amber">{p.bets_won}</span>

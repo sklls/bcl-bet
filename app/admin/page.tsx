@@ -73,7 +73,7 @@ export default async function AdminPage() {
         </Link>
         <Link href="/admin/users" className="block bg-table border border-rail hover:border-amber/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">User Wallets</h2>
-          <p className="text-slate text-sm">Top up user balances after cash collection</p>
+          <p className="text-slate text-sm">Issue in-game credits to players</p>
         </Link>
         <Link href="/admin/ledger" className="block bg-table border border-rail hover:border-amber/50 rounded-xl p-6 transition-colors">
           <h2 className="text-lg font-semibold mb-1">📒 Ledger</h2>

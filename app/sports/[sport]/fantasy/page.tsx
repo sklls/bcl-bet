@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase-server'
 import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
 import { SPORTS, SportType, hasFantasy } from '@/lib/sports'
+import { formatCredits } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,8 +17,6 @@ type ContestRow = {
   entrants: number
   match: { team_a: string; team_b: string; match_date: string; venue: string | null }
 }
-
-const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`
 
 function ContestCard({ sport, contest }: { sport: string; contest: ContestRow }) {
   const locksAt = new Date(contest.locks_at)
@@ -51,7 +50,7 @@ function ContestCard({ sport, contest }: { sport: string; contest: ContestRow })
         <div className="mt-3 pt-3 border-t border-rail grid grid-cols-3 gap-2 text-center">
           <div>
             <p className="text-xs text-slate">Entry</p>
-            <p className="text-sm font-semibold text-white">{inr(Number(contest.entry_fee))}</p>
+            <p className="text-sm font-semibold text-white">{formatCredits(Number(contest.entry_fee))}</p>
           </div>
           <div>
             <p className="text-xs text-slate">Entrants</p>
@@ -59,7 +58,7 @@ function ContestCard({ sport, contest }: { sport: string; contest: ContestRow })
           </div>
           <div>
             <p className="text-xs text-slate">Prize pool</p>
-            <p className="text-sm font-semibold text-gold">{inr(Number(contest.prize_pool))}</p>
+            <p className="text-sm font-semibold text-gold">{formatCredits(Number(contest.prize_pool))}</p>
           </div>
         </div>
       </div>

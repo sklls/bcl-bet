@@ -6,6 +6,7 @@ import { SPORTS, SportType, hasFantasy } from '@/lib/sports'
 import { resolveSquad } from '@/lib/fantasy/squad'
 import TeamBuilder from '@/components/fantasy/TeamBuilder'
 import ContestLeaderboard from '@/components/fantasy/ContestLeaderboard'
+import { formatCredits } from '@/lib/credits'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,7 +112,7 @@ export default async function ContestPage({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate">
         <span>Locks {format(new Date(contest.locks_at), 'dd MMM, h:mm a')}</span>
         <span className="text-rail">•</span>
-        <span>Pool {`₹${Number(contest.prize_pool).toLocaleString('en-IN')}`}</span>
+        <span>Pool {`${formatCredits(Number(contest.prize_pool))}`}</span>
         {match.venue && <><span className="text-rail">•</span><span>{match.venue}</span></>}
       </div>
 

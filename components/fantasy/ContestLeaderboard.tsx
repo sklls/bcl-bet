@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { formatCredits } from '@/lib/credits'
 
 type Row = {
   display_name: string
@@ -17,8 +18,6 @@ type Payload = {
   prize_pool: number
   entries: Row[]
 }
-
-const inr = (n: number) => `₹${n.toLocaleString('en-IN')}`
 
 export default function ContestLeaderboard({ contestId }: { contestId: string }) {
   const [data, setData] = useState<Payload | null>(null)
@@ -45,11 +44,11 @@ export default function ContestLeaderboard({ contestId }: { contestId: string })
         </div>
         <div>
           <p className="text-xs text-slate">Entry</p>
-          <p className="text-sm font-semibold text-white">{inr(data.entry_fee)}</p>
+          <p className="text-sm font-semibold text-white">{formatCredits(data.entry_fee)}</p>
         </div>
         <div>
           <p className="text-xs text-slate">Prize pool</p>
-          <p className="text-sm font-semibold text-gold">{inr(data.prize_pool)}</p>
+          <p className="text-sm font-semibold text-gold">{formatCredits(data.prize_pool)}</p>
         </div>
       </div>
 
@@ -86,7 +85,7 @@ export default function ContestLeaderboard({ contestId }: { contestId: string })
                   {r.total_points === null ? '—' : r.total_points}
                 </span>
                 <span className={`text-sm text-right font-semibold ${r.payout ? 'text-gold' : 'text-slate'}`}>
-                  {r.payout ? inr(r.payout) : '—'}
+                  {r.payout ? formatCredits(r.payout) : '—'}
                 </span>
               </li>
             ))}

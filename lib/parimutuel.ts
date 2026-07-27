@@ -148,7 +148,7 @@ export function settleMarket(input: SettleInput): SettleResult {
   const winners = bets.filter((b) => b.bet_option_id === winningOptionId)
   if (winners.length === 0) return refundAll('no_winning_bets')
 
-  // A market where only one option attracted real money was never a contest.
+  // A market where only one option attracted any stake was never a contest.
   // Test real bets, not stake: every option holds seed money once seeded.
   const optionsWithBets = new Set(bets.map((b) => b.bet_option_id))
   if (optionsWithBets.size < 2) return refundAll('single_sided')

@@ -2,7 +2,7 @@
 
 > *Luck is for the Unprepared.*
 
-> **PrimeStake** is a pari-mutuel, multi-sport tournament betting app built for the Bengaluru Cricket League (BCL). It allows participants to bet virtual currency on match outcomes, top scorers, and live events. Admins manage matches, markets, and wallets; users browse, bet, and track their results.
+> **PrimeStake** is a pari-mutuel, multi-sport prediction game built for the Bengaluru Cricket League (BCL). Participants spend in-game credits (CR) on match outcomes, top scorers, live events, and fantasy contests. Admins manage matches, markets, contests, and credit balances; players browse, predict, and track their results. No real money is involved at any point.
 
 **Live URL:** https://bcl-bet-app-1.vercel.app
 **Repository:** https://github.com/sklls/bcl-bet
@@ -23,18 +23,21 @@
 9. [Pages & Components](#9-pages--components)
 10. [Authentication & Authorization](#10-authentication--authorization)
 11. [Odds Calculation](#11-odds-calculation)
-12. [Live Score Sync (CricHeroes)](#12-live-score-sync-cricheroes)
-13. [Admin Workflows](#13-admin-workflows)
-14. [User Workflows](#14-user-workflows)
-15. [Deployment](#15-deployment)
-16. [Local Development Setup](#16-local-development-setup)
-17. [Known Limitations & Future Ideas](#17-known-limitations--future-ideas)
+12. [Fantasy League](#12-fantasy-league)
+13. [Live Score Sync (CricHeroes)](#13-live-score-sync-cricheroes)
+14. [Admin Workflows](#14-admin-workflows)
+15. [User Workflows](#15-user-workflows)
+16. [Deployment](#16-deployment)
+17. [Local Development Setup](#17-local-development-setup)
+18. [Known Limitations & Future Ideas](#18-known-limitations--future-ideas)
 
 ---
 
 ## 1. Project Overview
 
-PrimeStake is a **closed betting platform** for a college cricket tournament. Real money is collected physically by admins, who then top-up user wallets on the platform. Users bet their virtual balance on match markets. Winners are credited automatically when a market is settled.
+PrimeStake is a **closed, free-to-play prediction game** for a college tournament. Admins issue in-game credits (CR) to players; that is the only way credits enter the game. Players spend credits on match markets or fantasy contests, and winners are credited automatically at settlement.
+
+> **Credits are not money.** They have no cash value, cannot be bought, sold, withdrawn, or exchanged for anything of value. Nothing in this system accepts or disburses currency.
 
 ### Key Features
 
@@ -86,7 +89,9 @@ bcl-bet/
 │   │       ├── markets/route.ts      # CRUD markets (admin only)
 │   │       ├── bets/route.ts         # Void individual bets (admin only)
 │   │       ├── users/route.ts        # List users, reset wallets (admin only)
-│   │       └── players/route.ts      # Fetch players by team name
+│   │       ├── players/route.ts      # Fetch players by team name
+│   │       ├── contests/route.ts     # CRUD fantasy contests (admin only)
+│   │       └── fantasy/              # stats (idempotent) + settle (one-time)
 │   │
 │   ├── admin/                        # Admin UI pages
 │   │   ├── page.tsx                  # Admin dashboard (stats + financials)
@@ -96,7 +101,7 @@ bcl-bet/
 │   ├── dashboard/page.tsx            # User's bets, stats, transactions
 │   ├── leaderboard/page.tsx          # Public leaderboard
 │   ├── login/page.tsx                # Sign in / Create account
-│   ├── matches/[id]/page.tsx         # Match detail + betting
+│   ├── sports/[sport]/                # Mode chooser, betting, fantasy
 │   ├── teams/page.tsx                # Teams page
 │   ├── layout.tsx                    # Root layout with Navbar
 │   └── page.tsx                      # Homepage — match list
@@ -104,6 +109,9 @@ bcl-bet/
 ├── components/
 │   ├── ui/
 │   │   └── Navbar.tsx                # Global navigation bar
+│   ├── fantasy/
+│   │   ├── TeamBuilder.tsx           # Squad picker, budget meter, C/VC
+│   │   └── ContestLeaderboard.tsx    # Standings, never a lineup
 │   └── betting/
 │       ├── MarketsSection.tsx        # Markets list on match page
 │       ├── BetSlip.tsx               # Bet placement form
@@ -112,11 +120,14 @@ bcl-bet/
 ├── lib/
 │   ├── supabase.ts                   # Browser Supabase client
 │   ├── supabase-server.ts            # Server + Admin Supabase clients
-│   └── odds.ts                       # Pari-mutuel odds logic
+│   ├── parimutuel.ts                 # Pari-mutuel odds + settlement engine
+│   ├── credits.ts                    # The credit unit — format it nowhere else
+│   ├── sports.ts                     # Sport registry + fantasy predicate
+│   └── fantasy/                      # scoring, lineup, prizes, squad
 │
 ├── supabase/
 │   └── migrations/
-│       └── 001_schema.sql            # Full database schema
+│       └── 001 … 011                 # Schema, multisport, pari-mutuel, fantasy
 │
 ├── middleware.ts                     # Route protection (auth + role checks)
 ├── next.config.mjs
@@ -154,11 +165,18 @@ CRON_SECRET=your-cron-secret
 ```sql
 user_role:        'user' | 'admin'
 match_status:     'upcoming' | 'live' | 'completed' | 'cancelled'
-market_type:      'winner' | 'top_scorer' | 'over_under' | 'live'
+match_format:     'team' | 'singles' | 'doubles'
+market_type:      'winner' | 'top_scorer' | 'over_under' | 'live' | 'custom'
 market_status:    'open' | 'closed' | 'settled'
 bet_status:       'pending' | 'won' | 'lost' | 'void'
-transaction_type: 'bet' | 'win' | 'topup' | 'refund'
+transaction_type: 'bet' | 'win' | 'topup' | 'refund' | 'fantasy_entry' | 'fantasy_prize'
+contest_status:   'open' | 'locked' | 'settled' | 'void'
 ```
+
+> `transaction_type` gained its two fantasy values in migration `009`, which contains
+> nothing else. `ALTER TYPE ... ADD VALUE` cannot be used in the same transaction that
+> adds it, and the migration runner posts each file as a single query — so `010` is the
+> first migration allowed to reference them.
 
 ### Tables
 
@@ -230,7 +248,7 @@ The choices within a market (e.g. "Titans", "Daredevils" for a winner market).
 | `settled_at` | TIMESTAMPTZ | When the market was settled |
 
 #### `transactions`
-Full ledger of all money movements.
+Full ledger of all credit movements.
 
 | Column | Type | Description |
 |---|---|---|
@@ -244,8 +262,12 @@ Full ledger of all money movements.
 **Transaction types:**
 - `bet` — deducted when a bet is placed (negative amount)
 - `win` — credited when a bet is won (positive)
-- `topup` — admin adds real money (positive)
-- `refund` — bet voided / market deleted (positive)
+- `topup` — admin issues credits (positive)
+- `refund` — bet voided / market deleted / contest voided (positive)
+- `fantasy_entry` — deducted on first entry to a contest (negative)
+- `fantasy_prize` — credited when a contest settles (positive)
+
+Editing a fantasy lineup before lock writes **no** transaction — the fee is charged once, on first entry only.
 
 #### `players`
 Used for top scorer market auto-population.
@@ -489,7 +511,7 @@ Calls `settle_market()` RPC.
 #### `POST /api/topup`
 Top up a user's wallet.
 ```json
-{ "target_user_id": "uuid", "amount": 500, "description": "Cash collected" }
+{ "target_user_id": "uuid", "amount": 500, "description": "Season credit grant" }
 ```
 
 ---
@@ -498,7 +520,7 @@ Top up a user's wallet.
 Returns all users: `id`, `display_name`, `wallet_balance`, `role`, `created_at`.
 
 #### `DELETE /api/admin/users?id=`
-Reset a user's wallet to ₹0. Calls `reset_wallet()` RPC.
+Reset a user's balance to 0 CR. Calls `reset_wallet()` RPC.
 
 ---
 
@@ -612,12 +634,12 @@ odds = (totalPool / amountOnOption) × (1 - houseEdge%)
 ```
 
 **Example:**
-- Total pool: ₹1,000
-- Bets on "Titans": ₹200
+- Total pool: 1,000 CR
+- Bets on "Titans": 200 CR
 - House edge: 5%
 - Odds = (1000 / 200) × 0.95 = **4.75x**
 
-If you bet ₹100, payout = ₹475.
+If you stake 100 CR, payout = 475 CR.
 
 **Minimum odds:** 1.01x (bettor always gets at least their stake back).
 
@@ -637,7 +659,96 @@ calcPayout(amount, odds): number   // amount * odds
 
 ---
 
-## 12. Live Score Sync (CricHeroes)
+## 12. Fantasy League
+
+A Dream11-style fantasy game sharing the same credit balance and the same pool-settlement model as betting — distributed by rank rather than by outcome.
+
+**Available for cricket and football only.** The other four sports have no squad data, so `/sports/[sport]` redirects them straight to betting.
+
+### Squad Rules
+
+| Rule | Value |
+|---|---|
+| Squad size | 11 players |
+| Budget | 100 squad credits |
+| Max from one team | 7 |
+| Captain | 2× points |
+| Vice-captain | 1.5× points |
+
+Player price is a generated column: `credits = 6 + rating × 0.5`, giving a 6.5 – 11.0 range. Never recompute it in application code.
+
+**Football position quotas:** exactly 1 GK, 3–5 DEF, 3–5 MID, 1–3 FWD, read from `team_players.role`.
+**Cricket has no quotas** — its `role` values are auction tiers (Captain, Marquee, Intermediate, Novice), not playing positions.
+
+> "Squad credits" (the 100-point team budget) and "credits / CR" (the balance) are different units that happen to share a word. The UI labels the former "squad credits" wherever both appear together.
+
+### Scoring
+
+Five capturable stats per sport, chosen so one scorer with a phone can record a whole match live.
+
+| Cricket | Points | Football | Points |
+|---|---|---|---|
+| Appearance | 2 | Appearance | 2 |
+| Run | 1 | Goal | 10 |
+| Wicket | 25 | Assist | 6 |
+| Catch | 8 | Save | 3 |
+| Six (bonus, on top of the run) | 2 | Clean sheet | 6 |
+| Run-out | 12 | Yellow / Red card | −2 / −6 |
+
+A player marked as not having played scores **zero**, whatever else is recorded against them. Football scores can go negative.
+
+### Prize Distribution
+
+`prize_pool = entry_fee × entrants × (1 − house_edge)`, with a 5% edge by default.
+
+| Entrants | Split |
+|---|---|
+| 10 or more | 40 / 25 / 15 / 12 / 8 % |
+| 4 – 9 | 50 / 30 / 20 % |
+| Under 4 | Void — every entry refunded in full |
+
+Ties use standard competition ranking: two players tied for 2nd both rank 2nd, split the combined money for places 2 and 3, and the next player finishes 4th.
+
+Awards are rounded **down** to the paisa (`Math.floor(x * 100) / 100`); the remainder stays with the house. Rounding to nearest allows the total to drift above the pool, which breaks the solvency invariant.
+
+### Settlement is Two Separate Actions
+
+This is the single most important thing to understand before running a contest.
+
+| Action | Idempotent? | Moves credits? | What it does |
+|---|---|---|---|
+| **Save stats** | Yes, always | No | Upserts stats, recomputes `total_points` for every entry |
+| **Settle contest** | No — one time only | Yes | Computes ranks and awards, pays out, marks the contest settled |
+
+Saving stats can be repeated as often as the admin likes, which is the entire point of separating the two. Recomputing payouts *after* credits have moved is a double-credit bug.
+
+Settlement is refused when:
+- the contest is already `settled` or `void`
+- any entry still has a null `total_points` (settling before stats would rank everyone at zero)
+- an award names an entry outside this contest, or the wrong user for an entry
+- awards total more than the prize pool — or, on a void, more than the fees actually collected
+
+### Privacy
+
+Lineups are private until lock. RLS lets a user read only their own entry, and `/api/fantasy/leaderboard` returns `display_name`, `total_points`, `rank` and `payout` — never a lineup. While a contest is still `open`, the leaderboard returns only the caller's own row, because visible standings would leak team composition by inference.
+
+### Fantasy API
+
+| Route | Method | Purpose |
+|---|---|---|
+| `/api/fantasy/squad?matchId=` | GET | Selectable players for a fixture, priced |
+| `/api/fantasy/entry` | POST | Join a contest or replace a lineup |
+| `/api/fantasy/entry?contestId=` | GET | The caller's own entry, with its XI |
+| `/api/fantasy/leaderboard?contestId=` | GET | Standings, never a lineup |
+| `/api/admin/contests` | GET/POST/PATCH/DELETE | Manage contests (one per match) |
+| `/api/admin/fantasy/stats` | GET/POST | Read or save stats; recomputes points |
+| `/api/admin/fantasy/settle` | POST | Settle a contest, once |
+
+A lineup submitted by a client is always re-validated server-side against a freshly resolved squad. The client's copy of the rules is a convenience; the server is the authority.
+
+---
+
+## 13. Live Score Sync (CricHeroes)
 
 ### How It Works
 
@@ -664,7 +775,7 @@ https://cricheroes.in/match/<match_id>/<slug>/scorecard
 
 ---
 
-## 13. Admin Workflows
+## 14. Admin Workflows
 
 ### Creating a Match
 1. Go to `/admin/matches` → "Add Match"
@@ -696,15 +807,15 @@ https://cricheroes.in/match/<match_id>/<slug>/scorecard
 
 ### House Edge Dashboard
 Go to `/admin` to see:
-- **Total Cash Collected** — sum of all positive top-ups
+- **Total Credits Issued** — sum of all positive top-ups
 - **Total Staked** — sum of all settled bets
 - **Total Paid Out** — sum of all winner payouts
-- **House Edge Kept** — staked minus paid out, shown as ₹ and %
+- **House Edge Kept** — staked minus paid out, shown as CR and %
 - Visual payout rate bar
 
 ---
 
-## 14. User Workflows
+## 15. User Workflows
 
 ### Signing Up
 1. Go to `/login` → "Create Account"
@@ -724,14 +835,14 @@ Go to `/dashboard`:
 - **Balance** — current wallet balance
 - **Bets** — won / settled count (+ pending)
 - **Win Rate** — % of settled bets won (green ≥50%, red <50%)
-- **Net Profit** — total payout received minus total staked (±₹)
+- **Net Profit** — total payout received minus total staked (± CR)
 - **ROI** — return on investment %
 - Full bet history with status, odds, payout
 - Full transaction log (bets, wins, top-ups, refunds)
 
 ---
 
-## 15. Deployment
+## 16. Deployment
 
 ### Vercel (Production)
 
@@ -771,7 +882,7 @@ Authorization: Bearer {CRON_SECRET}
 
 ---
 
-## 16. Local Development Setup
+## 17. Local Development Setup
 
 ```bash
 # 1. Clone the repo
@@ -816,11 +927,11 @@ export function createAdminClient() { ... }
 
 ---
 
-## 17. Known Limitations & Future Ideas
+## 18. Known Limitations & Future Ideas
 
 ### Current Limitations
 
-- **Manual wallet top-ups only** — No payment gateway (Stripe, Razorpay). Admin collects cash and tops up manually.
+- **Manual credit issuance only** — There is deliberately no payment gateway. Credits are granted by an admin and have no cash value, so no payment rail is wanted or needed.
 - **CricHeroes scraping** — Live scores depend on scraping CricHeroes HTML. If their site structure changes, the scraper may break.
 - **No password reset** — Users who forget their password need admin help (via Supabase Dashboard).
 - **No betting limits** — Users can bet their entire wallet in one go. No max bet enforcement.

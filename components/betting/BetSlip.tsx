@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { projectedOdds, projectedReturn, formatOdds } from '@/lib/parimutuel'
+import { formatCredits } from '@/lib/credits'
 
 type BetOption = {
   id: string
@@ -106,7 +107,7 @@ export default function BetSlip({
           Backing: <span className="text-white font-medium">{selectedOption.label}</span>
         </p>
         {userBalance !== null && (
-          <p className="text-xs text-slate">Balance: ₹{userBalance.toLocaleString()}</p>
+          <p className="text-xs text-slate">Balance: {formatCredits(userBalance)}</p>
         )}
       </div>
 
@@ -117,7 +118,7 @@ export default function BetSlip({
             onClick={() => setAmount(String(q))}
             className="flex-1 py-1 text-xs bg-raised hover:bg-rail rounded text-slate transition-colors"
           >
-            ₹{q}
+            {formatCredits(q)}
           </button>
         ))}
       </div>
@@ -126,7 +127,7 @@ export default function BetSlip({
         <input
           type="number"
           min="1"
-          placeholder="Enter amount (₹)"
+          placeholder="Enter amount (CR)"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           className="flex-1 px-3 py-2 bg-baize border border-rail rounded-lg text-white placeholder-slate-faded focus:outline-none focus:ring-2 focus:ring-amber text-sm"
@@ -141,12 +142,12 @@ export default function BetSlip({
           </div>
           <div className="flex justify-between text-slate">
             <span>Stake</span>
-            <span>₹{parseFloat(amount).toLocaleString('en-IN')}</span>
+            <span>{formatCredits(parseFloat(amount))}</span>
           </div>
           <div className="flex justify-between font-semibold text-white border-t border-rail pt-1 mt-1">
             <span>Projected return</span>
             <span className="text-amber">
-              ~₹{projectedReturn(parseFloat(amount), previewOdds).toLocaleString('en-IN')}
+              ~{formatCredits(projectedReturn(parseFloat(amount), previewOdds))}
             </span>
           </div>
           <p className="text-[11px] text-slate pt-1 leading-snug">
