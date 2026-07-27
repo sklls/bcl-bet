@@ -50,3 +50,9 @@ export const SPORT_MARKETS: Record<SportType, { value: string; label: string }[]
 
 // Markets that use the player-picker UI (populated from /api/admin/players)
 export const PLAYER_PICKER_MARKETS = new Set(['top_scorer', 'first_goal_scorer'])
+
+/** Sports that additionally offer a Dream11-style fantasy league. */
+export const FANTASY_SPORTS = ['cricket', 'football'] as const
+export type FantasySportType = typeof FANTASY_SPORTS[number]
+export const hasFantasy = (sport: string): sport is FantasySportType =>
+  (FANTASY_SPORTS as readonly string[]).includes(sport)

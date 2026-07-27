@@ -1,67 +1,24 @@
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { format } from 'date-fns'
-import { notFound } from 'next/navigation'
-import { SPORTS, SportType } from '@/lib/sports'
-import AdBanner from '@/components/ui/AdBanner'
+import { notFound, redirect } from 'next/navigation'
+import { SPORTS, SportType, hasFantasy } from '@/lib/sports'
 
 export const dynamic = 'force-dynamic'
 
-type Match = {
-  id: string
-  team_a: string
-  team_b: string
-  match_date: string
-  venue: string | null
-  status: string
-  sport: SportType
-  markets: { id: string; market_type: string; status: string }[]
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    live:      'bg-crimson animate-pulse',
-    upcoming:  'bg-royal',
-    completed: 'bg-rail text-slate',
-    cancelled: 'bg-gold',
-  }
+function ModeCard({
+  href, emoji, title, subtitle, meta,
+}: {
+  href: string; emoji: string; title: string; subtitle: string; meta: string
+}) {
   return (
-    <span className={`text-xs px-2 py-0.5 rounded-full text-white font-medium ${colors[status] ?? 'bg-rail'}`}>
-      {status.toUpperCase()}
-    </span>
-  )
-}
-
-function MatchCard({ match }: { match: Match }) {
-  const openMarkets = match.markets?.filter(m => m.status === 'open').length ?? 0
-  return (
-    <Link href={`/sports/${match.sport}/${match.id}`}>
-      <div className="bg-table hover:bg-raised border border-rail hover:border-amber/50 rounded-xl p-5 transition-all cursor-pointer">
-        <div className="flex items-center justify-between mb-3">
-          <StatusBadge status={match.status} />
-          <span className="text-xs text-slate">
-            {format(new Date(match.match_date), 'dd MMM, h:mm a')}
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="text-center flex-1">
-            <p className="font-bold text-lg">{match.team_a}</p>
-          </div>
-          <div className="text-slate font-bold text-sm px-4">VS</div>
-          <div className="text-center flex-1">
-            <p className="font-bold text-lg">{match.team_b}</p>
-          </div>
-        </div>
-        {match.venue && (
-          <p className="text-xs text-slate text-center mt-2">{match.venue}</p>
-        )}
-        <div className="mt-3 pt-3 border-t border-rail flex items-center justify-between">
-          <span className="text-xs text-slate">
-            {openMarkets > 0
-              ? <span className="text-amber">{openMarkets} market{openMarkets > 1 ? 's' : ''} open</span>
-              : 'No open markets'}
-          </span>
-          <span className="text-xs text-amber font-medium">View →</span>
+    <Link href={href}>
+      <div className="bg-table hover:bg-raised border border-rail hover:border-amber/50 rounded-xl p-6 sm:p-8 transition-all cursor-pointer h-full flex flex-col">
+        <p className="text-4xl mb-3">{emoji}</p>
+        <h2 className="text-xl font-bold text-white mb-1">{title}</h2>
+        <p className="text-sm text-slate flex-1">{subtitle}</p>
+        <div className="mt-4 pt-4 border-t border-rail flex items-center justify-between">
+          <span className="text-xs text-amber font-medium">{meta}</span>
+          <span className="text-xs text-amber font-medium">Enter →</span>
         </div>
       </div>
     </Link>
@@ -72,19 +29,30 @@ export default async function SportPage({ params }: { params: { sport: string } 
   const sport = params.sport as SportType
   if (!SPORTS[sport]) notFound()
 
+  // The other four sports have nothing to choose between.
+  if (!hasFantasy(sport)) redirect(`/sports/${sport}/betting`)
+
   const supabase = createServerSupabaseClient()
+
   const { data: matches } = await supabase
     .from('matches')
-    .select('*, markets(id, market_type, status)')
+    .select('id, markets(status)')
     .eq('sport', sport)
-    .order('match_date', { ascending: true })
 
-  const now = new Date()
-  const live      = (matches ?? []).filter((m: Match) => m.status === 'live')
-  const upcoming  = (matches ?? []).filter((m: Match) => m.status === 'upcoming' && new Date(m.match_date) > now)
-  const completed = (matches ?? [])
-    .filter((m: Match) => m.status === 'completed' || (m.status === 'upcoming' && new Date(m.match_date) <= now))
-    .sort((a, b) => new Date(b.match_date).getTime() - new Date(a.match_date).getTime())
+  const matchIds = (matches ?? []).map(m => m.id)
+  const openMarkets = (matches ?? []).reduce(
+    (n, m) => n + ((m.markets ?? []) as { status: string }[]).filter(k => k.status === 'open').length, 0)
+
+  let openContests = 0
+  if (matchIds.length > 0) {
+    const { count } = await supabase
+      .from('contests')
+      .select('*', { count: 'exact', head: true })
+      .in('match_id', matchIds)
+      .eq('status', 'open')
+      .gt('locks_at', new Date().toISOString())
+    openContests = count ?? 0
+  }
 
   return (
     <div className="space-y-8">
@@ -96,43 +64,26 @@ export default async function SportPage({ params }: { params: { sport: string } 
         </h1>
       </div>
 
-      {live.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold text-crimson-light mb-3">Live Now</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {live.map((m: Match) => <MatchCard key={m.id} match={m} />)}
-          </div>
-        </section>
-      )}
-
-      <AdBanner />
-
-      {upcoming.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold text-amber mb-3">Upcoming</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {upcoming.map((m: Match) => <MatchCard key={m.id} match={m} />)}
-          </div>
-        </section>
-      )}
-
-      <AdBanner />
-
-      {completed.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold text-slate mb-3">Completed</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {completed.map((m: Match) => <MatchCard key={m.id} match={m} />)}
-          </div>
-        </section>
-      )}
-
-      {(matches ?? []).length === 0 && (
-        <div className="text-center py-20 text-slate">
-          <p className="text-4xl mb-3">{SPORTS[sport].emoji}</p>
-          <p>No {SPORTS[sport].label} matches scheduled yet.</p>
-        </div>
-      )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <ModeCard
+          href={`/sports/${sport}/betting`}
+          emoji="🎯"
+          title="Betting"
+          subtitle="Back an outcome. Winners share the pool."
+          meta={openMarkets > 0
+            ? `${openMarkets} market${openMarkets > 1 ? 's' : ''} open`
+            : 'No open markets'}
+        />
+        <ModeCard
+          href={`/sports/${sport}/fantasy`}
+          emoji="🏆"
+          title="Fantasy"
+          subtitle="Pick 11. Score points. Top ranks win."
+          meta={openContests > 0
+            ? `${openContests} contest${openContests > 1 ? 's' : ''} open`
+            : 'No contests open'}
+        />
+      </div>
     </div>
   )
 }
