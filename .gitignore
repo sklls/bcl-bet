@@ -48,3 +48,6 @@ next-env.d.ts
 
 # impeccable per-session cache (regenerated locally)
 .impeccable/hook.cache.json
+
+# agent test reports (regenerable; may contain probe details)
+/.test-reports/
