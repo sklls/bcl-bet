@@ -35,6 +35,42 @@ async function entrantCount(admin: ReturnType<typeof createAdminClient>, contest
   return count ?? 0
 }
 
+// GET /api/admin/contests[?matchId=<uuid>]
+// Contest state for the admin match list: status, entrants, pool, and whether
+// every entry has been scored (settlement is refused until they have).
+export async function GET(request: Request) {
+  const admin_user = await verifyAdmin()
+  if (!admin_user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { searchParams } = new URL(request.url)
+  const matchId = searchParams.get('matchId')
+
+  const admin = createAdminClient()
+  let query = admin
+    .from('contests')
+    .select('id, match_id, entry_fee, house_edge_pct, status, prize_pool, locks_at, contest_entries(total_points)')
+  if (matchId) query = query.eq('match_id', matchId)
+
+  const { data, error } = await query
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  const contests = (data ?? []).map(c => {
+    const entries = (c.contest_entries ?? []) as { total_points: number | null }[]
+    return {
+      id:         c.id,
+      match_id:   c.match_id,
+      entry_fee:  Number(c.entry_fee),
+      status:     c.status,
+      prize_pool: Number(c.prize_pool),
+      locks_at:   c.locks_at,
+      entrants:   entries.length,
+      all_scored: entries.length > 0 && entries.every(e => e.total_points !== null),
+    }
+  })
+
+  return NextResponse.json({ contests })
+}
+
 // POST /api/admin/contests — one contest per match.
 export async function POST(request: Request) {
   const admin_user = await verifyAdmin()

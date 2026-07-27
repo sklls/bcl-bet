@@ -33,6 +33,26 @@ async function verifyAdmin() {
   return profile?.role === 'admin' ? user : null
 }
 
+// GET /api/admin/fantasy/stats?matchId=<uuid> — rows already saved, so the
+// grid opens showing what was last entered rather than a blank slate.
+export async function GET(request: Request) {
+  const admin_user = await verifyAdmin()
+  if (!admin_user) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { searchParams } = new URL(request.url)
+  const matchId = searchParams.get('matchId')
+  if (!matchId) return NextResponse.json({ error: 'Missing matchId' }, { status: 400 })
+
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('player_match_stats')
+    .select('player_id, played, runs, wickets, catches, sixes, run_outs, goals, assists, saves, clean_sheet, yellows, reds')
+    .eq('match_id', matchId)
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ stats: data ?? [] })
+}
+
 // POST /api/admin/fantasy/stats
 //
 // Fully idempotent, and moves no money. Saving stats recomputes points and

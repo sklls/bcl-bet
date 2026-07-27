@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { format } from 'date-fns'
-import { SPORTS, ALL_SPORTS, SPORT_MARKETS, PLAYER_PICKER_MARKETS, SportType } from '@/lib/sports'
+import { SPORTS, ALL_SPORTS, SPORT_MARKETS, PLAYER_PICKER_MARKETS, SportType, hasFantasy } from '@/lib/sports'
+import StatEntry from '@/components/admin/StatEntry'
+import type { FantasySport } from '@/lib/fantasy/scoring'
 
 type Bet = { id: string; user_id: string; amount: number; status: string; placed_at: string; profiles?: { display_name: string } }
 type BetOption = { id: string; label: string; total_amount_bet: number; bets?: Bet[] }
@@ -18,6 +20,16 @@ type Match = {
   markets: Market[]
 }
 type Team = { id: string; name: string }
+type Contest = {
+  id: string
+  match_id: string
+  entry_fee: number
+  status: string
+  prize_pool: number
+  locks_at: string
+  entrants: number
+  all_scored: boolean
+}
 
 export default function AdminMatchesPage() {
   const [matches, setMatches] = useState<Match[]>([])
@@ -50,13 +62,67 @@ export default function AdminMatchesPage() {
     customTitle: '',
   })
 
+  const [contests, setContests] = useState<Record<string, Contest>>({})
+  const [showStats, setShowStats] = useState<string | null>(null)
+  const [feeInput, setFeeInput] = useState<Record<string, string>>({})
+
   const loadMatches = useCallback(async () => {
     const res = await fetch('/api/admin/matches')
     if (res.ok) setMatches(await res.json())
     setLoading(false)
   }, [])
 
+  const loadContests = useCallback(async () => {
+    const res = await fetch('/api/admin/contests')
+    if (!res.ok) return
+    const { contests: rows } = await res.json()
+    const byMatch: Record<string, Contest> = {}
+    for (const c of rows as Contest[]) byMatch[c.match_id] = c
+    setContests(byMatch)
+  }, [])
+
   useEffect(() => { loadMatches() }, [loadMatches])
+  useEffect(() => { loadContests() }, [loadContests])
+
+  async function createContest(matchId: string) {
+    const raw = parseFloat(feeInput[matchId] ?? '100')
+    const res = await fetch('/api/admin/contests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ match_id: matchId, entry_fee: Number.isFinite(raw) ? raw : 100 }),
+    })
+    const d = await res.json()
+    if (res.ok) { setMsg('Contest created!'); loadContests() }
+    else setMsg(d.error ?? 'Error')
+  }
+
+  async function deleteContest(contestId: string) {
+    if (!confirm('Delete this contest?')) return
+    const res = await fetch(`/api/admin/contests?id=${contestId}`, { method: 'DELETE' })
+    const d = await res.json()
+    if (res.ok) { setMsg('Contest deleted'); loadContests() }
+    else setMsg(d.error ?? 'Error')
+  }
+
+  async function settleContest(contest: Contest, matchName: string) {
+    const warning = contest.entrants < 4
+      ? `Void the fantasy contest for ${matchName}?\n\nFewer than 4 entrants — every entry is refunded in full. This is FINAL.`
+      : `Settle the fantasy contest for ${matchName}?\n\nThis is FINAL: prizes are paid into real wallet balances and cannot be reversed. Settle only once the stats are correct.`
+    if (!confirm(warning)) return
+
+    const res = await fetch('/api/admin/fantasy/settle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contest_id: contest.id }),
+    })
+    const d = await res.json()
+    if (res.ok) {
+      setMsg(d.void
+        ? `Contest voided — ${d.reason}`
+        : `Settled — ₹${Number(d.total_paid).toLocaleString('en-IN')} paid across ${d.settled} entries`)
+      loadContests()
+    } else setMsg(d.error ?? 'Error')
+  }
 
   async function fetchSportTeams(sport: SportType) {
     const res = await fetch(`/api/admin/teams?sport=${sport}`)
@@ -570,6 +636,108 @@ export default function AdminMatchesPage() {
                   ))}
                 </div>
               )}
+
+              {/* Fantasy — cricket and football only */}
+              {hasFantasy(match.sport) && (() => {
+                const contest = contests[match.id]
+                const name = `${match.team_a} vs ${match.team_b}`
+                const locked = contest ? new Date(contest.locks_at) <= new Date() : false
+                const done = contest?.status === 'settled' || contest?.status === 'void'
+                // Settling early would rank everyone at zero and pay the wrong
+                // people, so it waits for lock and for every entry to be scored.
+                const canSettle = !!contest && !done && locked
+                  && (contest.entrants < 4 || contest.all_scored)
+
+                return (
+                  <div className="bg-baize border border-rail rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <h3 className="text-sm font-semibold text-white">🏆 Fantasy</h3>
+
+                      {!contest ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="100"
+                            value={feeInput[match.id] ?? ''}
+                            onChange={e => setFeeInput({ ...feeInput, [match.id]: e.target.value })}
+                            className="w-20 px-2 py-1 bg-raised border border-rail rounded text-white text-xs"
+                          />
+                          <button
+                            onClick={() => createContest(match.id)}
+                            className="px-3 py-1 bg-amber hover:bg-amber-deep text-white rounded text-xs font-medium"
+                          >
+                            Create contest
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => setShowStats(showStats === match.id ? null : match.id)}
+                            className="px-3 py-1 bg-raised hover:bg-rail text-slate rounded text-xs"
+                          >
+                            {showStats === match.id ? 'Hide stats' : 'Enter stats'}
+                          </button>
+                          <button
+                            onClick={() => settleContest(contest, name)}
+                            disabled={!canSettle}
+                            title={
+                              done ? 'Already settled'
+                              : !locked ? 'Waits until the contest locks'
+                              : !contest.all_scored ? 'Save match stats first'
+                              : ''
+                            }
+                            className={`px-3 py-1 rounded text-xs font-medium ${
+                              canSettle
+                                ? 'bg-amber hover:bg-amber-deep text-white'
+                                : 'bg-rail text-slate cursor-not-allowed'
+                            }`}
+                          >
+                            {contest.entrants < 4 && !done ? 'Void & refund' : 'Settle contest'}
+                          </button>
+                          {contest.entrants === 0 && !done && (
+                            <button
+                              onClick={() => deleteContest(contest.id)}
+                              className="px-2 py-1 bg-crimson/10 hover:bg-crimson/20 text-crimson-light rounded text-xs"
+                            >
+                              🗑
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {contest && (
+                      <div className="flex items-center gap-4 text-xs text-slate flex-wrap">
+                        <span>
+                          Status <span className={`font-medium ${
+                            done ? 'text-slate' : locked ? 'text-gold' : 'text-amber'
+                          }`}>{done ? contest.status : locked ? 'locked' : 'open'}</span>
+                        </span>
+                        <span>Entry <span className="text-white">₹{contest.entry_fee.toLocaleString('en-IN')}</span></span>
+                        <span>Entrants <span className="text-white">{contest.entrants}</span></span>
+                        <span>Pool <span className="text-gold">₹{contest.prize_pool.toLocaleString('en-IN')}</span></span>
+                        <span>Locks {format(new Date(contest.locks_at), 'dd MMM, h:mm a')}</span>
+                      </div>
+                    )}
+
+                    {contest && contest.entrants > 0 && !contest.all_scored && !done && (
+                      <p className="text-xs text-gold">
+                        Not every entry has points yet — save stats before settling.
+                      </p>
+                    )}
+
+                    {showStats === match.id && (
+                      <StatEntry
+                        matchId={match.id}
+                        sport={match.sport as FantasySport}
+                        homeTeam={match.team_a}
+                        onClose={() => { setShowStats(null); loadContests() }}
+                      />
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           )
         })}
