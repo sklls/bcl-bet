@@ -47,6 +47,21 @@ export function createAdminClient() {
   return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: {
+        // Next patches global fetch and stores GET responses in its Data Cache.
+        // `export const dynamic = 'force-dynamic'` re-renders the page but does
+        // NOT stop that fetch being replayed from cache — which is how the
+        // fantasy contest list kept serving "no contests yet" long after one
+        // existed, while the cookie-reading anon client on the same data
+        // reported it correctly.
+        //
+        // Every read through this client is live state: contest status, wallet
+        // balances, settlement results. None of it may come from a cache.
+        fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+          fetch(input, { ...init, cache: 'no-store' }),
+      },
+    }
   )
 }
