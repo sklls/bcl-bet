@@ -14,7 +14,11 @@ const check = (label, ok, detail = '') => {
 }
 
 console.log('=== DATA PRESERVED (nothing was cleared) ===')
-for (const [t, expect] of [['profiles', 17], ['bets', 179], ['transactions', 281]]) {
+// Baseline rebased 2026-07-27: a real ₹50 bet was placed on 2026-07-26, which
+// the previous numbers (179/281) predated. Wallet total moved ₹160,978.30 →
+// ₹160,928.30 by that stake. Fantasy smoke-test rows were removed and left no
+// trace — see scripts/verify-fantasy.mjs for the fantasy-side gate.
+for (const [t, expect] of [['profiles', 17], ['bets', 180], ['transactions', 282]]) {
   const { count } = await sb.from(t).select('*', { count: 'exact', head: true })
   check(`${t} = ${expect}`, count === expect, `actual ${count}`)
 }

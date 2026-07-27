@@ -46,13 +46,14 @@ check('open markets span more than one option count (sanity: filter is generic)'
   `option counts seen: ${[...new Set(open.map(m => (m.bet_options ?? []).length))].sort((a, b) => a - b).join(', ')}`)
 
 console.log('\n=== DATA PRESERVED (real money, must be untouched) ===')
-for (const [t, expect] of [['profiles', 17], ['bets', 179], ['transactions', 281]]) {
+// Baseline rebased 2026-07-27 — see the note in scripts/verify.mjs.
+for (const [t, expect] of [['profiles', 17], ['bets', 180], ['transactions', 282]]) {
   const { count } = await sb.from(t).select('*', { count: 'exact', head: true })
   check(`${t} = ${expect}`, count === expect, `actual ${count}`)
 }
 const { data: bal } = await sb.from('profiles').select('wallet_balance')
 const walletTotal = bal.reduce((s, p) => s + Number(p.wallet_balance), 0)
-check('total wallet balance = ₹160,978.30', Math.abs(walletTotal - 160978.30) < 0.01,
+check('total wallet balance = ₹160,928.30', Math.abs(walletTotal - 160928.30) < 0.01,
   `actual ₹${walletTotal.toFixed(2)}`)
 
 console.log('\n=== NO SETTLED MARKET EVER OVERPAID ===')
