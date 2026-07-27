@@ -103,7 +103,7 @@ export default function AdminUsersPage() {
             className="w-full px-3 py-2 bg-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <input
-            placeholder="Note (e.g. Cash received 24 Feb)"
+            placeholder="Note (e.g. Season credit grant)"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2 bg-rail rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-green-500"

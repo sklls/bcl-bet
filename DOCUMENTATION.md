@@ -2,7 +2,7 @@
 
 > *Luck is for the Unprepared.*
 
-> **PrimeStake** is a pari-mutuel, multi-sport prediction game built for the Bengaluru Cricket League (BCL). Participants spend in-game credits (CR) on match outcomes, top scorers, live events, and fantasy contests. Admins manage matches, markets, contests, and credit balances; players browse, predict, and track their results. No real money is involved at any point.
+> **PrimeStake** is a pari-mutuel, multi-sport prediction game built for a private multi-sport tournament. Participants spend in-game credits (CR) on match outcomes, top scorers, live events, and fantasy contests. Admins manage matches, markets, contests, and credit balances; players browse, predict, and track their results.
 
 **Live URL:** https://bcl-bet-app-1.vercel.app
 **Repository:** https://github.com/sklls/bcl-bet
@@ -35,9 +35,9 @@
 
 ## 1. Project Overview
 
-PrimeStake is a **closed, free-to-play prediction game** for a college tournament. Admins issue in-game credits (CR) to players; that is the only way credits enter the game. Players spend credits on match markets or fantasy contests, and winners are credited automatically at settlement.
+PrimeStake is a **closed, free-to-play prediction game** for a private tournament. Admins issue in-game credits (CR) to players; that is the only way credits enter the game. Players spend credits on match markets or fantasy contests, and winners are credited automatically at settlement.
 
-> **Credits are not money.** They have no cash value, cannot be bought, sold, withdrawn, or exchanged for anything of value. Nothing in this system accepts or disburses currency.
+> **Credits are a scoring unit.** They are issued by an admin for use inside the tournament, cannot be purchased, and cannot be transferred out of the app or exchanged for anything outside it.
 
 ### Key Features
 
@@ -459,7 +459,7 @@ Create a new match.
   "team_a": "Titans",
   "team_b": "Daredevils",
   "match_date": "2026-03-01T09:00:00Z",
-  "venue": "BCL Ground",
+  "venue": "Main Ground",
   "cricheroes_url": "https://cricheroes.in/match/12345/some-slug"
 }
 ```
@@ -707,7 +707,7 @@ A player marked as not having played scores **zero**, whatever else is recorded 
 | 4 – 9 | 50 / 30 / 20 % |
 | Under 4 | Void — every entry refunded in full |
 
-Ties use standard competition ranking: two players tied for 2nd both rank 2nd, split the combined money for places 2 and 3, and the next player finishes 4th.
+Ties use standard competition ranking: two players tied for 2nd both rank 2nd, split the combined prize for places 2 and 3, and the next player finishes 4th.
 
 Awards are rounded **down** to the paisa (`Math.floor(x * 100) / 100`); the remainder stays with the house. Rounding to nearest allows the total to drift above the pool, which breaks the solvency invariant.
 
@@ -931,7 +931,7 @@ export function createAdminClient() { ... }
 
 ### Current Limitations
 
-- **Manual credit issuance only** — There is deliberately no payment gateway. Credits are granted by an admin and have no cash value, so no payment rail is wanted or needed.
+- **Manual credit issuance only** — There is deliberately no payment gateway. Credits are granted by an admin and exist only inside the app, so no payment rail is wanted or needed.
 - **CricHeroes scraping** — Live scores depend on scraping CricHeroes HTML. If their site structure changes, the scraper may break.
 - **No password reset** — Users who forget their password need admin help (via Supabase Dashboard).
 - **No betting limits** — Users can bet their entire wallet in one go. No max bet enforcement.

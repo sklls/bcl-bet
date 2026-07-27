@@ -93,11 +93,11 @@ components:
 
 **Creative North Star: "The Private Book"**
 
-PrimeStake looks like an exclusive members' sportsbook, not a public gambling site. The surface is a deep, near-black navy — the baize of a card table seen under low light — and every screen is built from tonal layers of that same blue rather than from shadows or borders-as-decoration. Amber is the house signal: it marks what's live, what's selected, and what pays. It is used sparingly and with intent, which is exactly why it reads as premium instead of loud. The system carries the live-odds density of a real book (Bet365) with the composed darkness of a modern trading surface (Stake) and the mobile-first polish of a top gaming app (Dream11) — but it refuses the excesses of all three.
+PrimeStake looks like an exclusive members' sportsbook, not a mass-market betting site. The surface is a deep, near-black navy — the baize of a card table seen under low light — and every screen is built from tonal layers of that same blue rather than from shadows or borders-as-decoration. Amber is the house signal: it marks what's live, what's selected, and what pays. It is used sparingly and with intent, which is exactly why it reads as premium instead of loud. The system carries the live-odds density of a real book (Bet365) with the composed darkness of a modern trading surface (Stake) and the mobile-first polish of a top gaming app (Dream11) — but it refuses the excesses of all three.
 
-This is a play-money app that must earn real trust, so the design behaves like a ledger: precise numbers, quiet confidence, nothing that reads as a scam. Interactive elements are tactile and confident — bet tiles and buttons feel pressable, respond immediately to hover and selection, and never leave you guessing whether a tap registered. Energy comes from live state (a pulsing "live now", odds ticking as the pool shifts, a leaderboard climbing), never from flashing offers or manufactured urgency.
+This app runs on in-game credits and must earn genuine trust, so the design behaves like a ledger: precise numbers, quiet confidence, nothing that reads as a scam. Interactive elements are tactile and confident — bet tiles and buttons feel pressable, respond immediately to hover and selection, and never leave you guessing whether a tap registered. Energy comes from live state (a pulsing "live now", odds ticking as the pool shifts, a leaderboard climbing), never from flashing offers or manufactured urgency.
 
-The system explicitly rejects the seedy neon-casino look, the cheap school-project feel, the wall-of-blinking-numbers clutter, and the interchangeable purple-gradient SaaS template. If a screen could be mistaken for an offshore-bookie landing page or a Bootstrap demo, it has failed.
+The system explicitly rejects the seedy neon glow, the cheap school-project feel, the wall-of-blinking-numbers clutter, and the interchangeable purple-gradient SaaS template. If a screen could be mistaken for a shady-operator landing page or a Bootstrap demo, it has failed.
 
 **Key Characteristics:**
 - Deep-navy tonal layering, no decorative shadows — depth is built from four shades of one blue.
@@ -140,7 +140,7 @@ A single deep-navy family carries the entire surface; amber and gold are the onl
 **Character:** One family, worked entirely through weight and size. Inter's tabular clarity suits a book of numbers — odds, stakes, balances, pools — where digits must align and never be misread. There is no display serif and no second family; the restraint is deliberate and on-brand for "The Private Book."
 
 ### Hierarchy
-- **Display** (700, 1.5rem / text-2xl, line-height 1.2): Page titles only — "BCL Tournament", a match name. One per screen.
+- **Display** (700, 1.5rem / text-2xl, line-height 1.2): Page titles only — "PrimeStake", a match name. One per screen.
 - **Title** (700, 1.125rem / text-lg, line-height 1.3): Card and section headings, market names. Also the size of the live-odds figure on a bet tile (700, gold).
 - **Body** (400, 0.875rem / text-sm, line-height 1.5): Default running text and most labels. Cap prose at 65–75ch.
 - **Label** (500, 0.75rem / text-xs): Meta text, status chips, quick-amount chips, supporting counts. The smallest routine size.
@@ -200,8 +200,8 @@ The core interactive primitive: a pressable option in a 2-up (mobile) / 3-up (ta
 - **Do** keep all non-white text at Muted Slate (#7A91C4) or brighter — it is the single secondary tier and the quietest text the system allows. Never introduce a dimmer slate for "meta"; anything under #7A91C4 fails AA on the lighter navy surfaces.
 
 ### Don't:
-- **Don't** ship a sketchy or spammy gambling look — no seedy neon-casino glow, flashing jackpots, fake "you won!" urgency, or offshore-bookie styling.
-- **Don't** let it look cheap or toy-like — no clip-art, no default-framework buttons, no play-money-demo feel. This must read as a real book.
+- **Don't** ship a sketchy or spammy look — no seedy neon glow, flashing jackpots, fake "you won!" urgency, or shady-operator styling.
+- **Don't** let it look cheap or toy-like — no clip-art, no default-framework buttons, no throwaway-demo feel. This must read as a real book.
 - **Don't** create a cluttered wall of tiny blinking numbers — density is earned through hierarchy; if a screen can't be parsed at a glance, cut or rank, don't shrink.
 - **Don't** drift into generic AI SaaS — no purple gradients, no gradient text, no interchangeable rounded-card template.
 - **Don't** add drop shadows to convey elevation — widen the tonal step instead (The No-Shadow Rule).

@@ -1,12 +1,12 @@
 # PrimeStake — The Full Journey
 
-A detailed account of how this platform was conceived, built, broken, fixed, and evolved from a blank Next.js repo into a fully functioning cricket betting system for the BCL tournament.
+A detailed account of how this platform was conceived, built, broken, fixed, and evolved from a blank Next.js repo into a fully functioning multi-sport prediction system for a private tournament.
 
 ---
 
 ## The Idea
 
-The BCL is an internal cricket tournament played among MBA students. Watching matches was fun, but we wanted people to have more skin in the game — not real gambling, but a fun in-game economy where everyone gets a starting balance of credits (CR) that have no cash value and cannot be bought or cashed out.
+PrimeStake was built around an internal multi-sport tournament played among MBA students. Watching matches was fun, but we wanted people to have more invested in the outcome — so everyone gets a starting balance of credits (CR) that exist only inside the app and are used purely to keep score.
 
 The goals were simple:
 - Players should be able to bet on match outcomes
@@ -82,7 +82,7 @@ Getting RLS right took iteration. The first version had policies that were too p
 
 ### Why Not Fixed Odds?
 
-Fixed odds (like a bookmaker offers) require someone to set and manage prices, update them as money comes in, and take on liability risk. We had none of that infrastructure.
+Fixed odds (like a bookmaker offers) require someone to set and manage prices, update them as stakes come in, and take on liability risk. We had none of that infrastructure.
 
 Pari-mutuel odds were the answer. The pool is split among winners. The house takes a percentage. Nobody sets prices — the market does.
 
@@ -163,7 +163,7 @@ const [topups, settledBets, winTransactions] = await Promise.all([
 
 ### The Approach
 
-CricHeroes is the platform where BCL matches are scored. We wanted live scores to appear on the match page automatically.
+CricHeroes is the platform where tournament matches are scored. We wanted live scores to appear on the match page automatically.
 
 CricHeroes doesn't have a public API. But their web app is Next.js — which means every page embeds full match data in a `<script id="__NEXT_DATA__">` tag.
 

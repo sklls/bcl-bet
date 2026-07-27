@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
   title: 'PrimeStake — Luck is for the Unprepared',
-  description: 'Pool-based betting on every BCL sport — live odds, one place. Luck is for the Unprepared.',
+  description: 'Pool-based prediction on every sport — live odds, one place. Luck is for the Unprepared.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

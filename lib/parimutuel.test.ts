@@ -117,7 +117,7 @@ describe('settleMarket', () => {
     expect(result.losingBetIds).toEqual(['b3'])
   })
 
-  it('kills the ₹1 exploit — a tiny stake gets a tiny share', () => {
+  it('kills the 1-credit exploit — a tiny stake gets a tiny share', () => {
     const result = settleMarket({
       options: [
         { id: 'sky', total_amount_bet: 5101, seed_amount: 500 },
@@ -134,7 +134,7 @@ describe('settleMarket', () => {
     })
     if (result.kind !== 'paid') throw new Error('expected paid')
     const tiny = result.payouts.find((p) => p.bet_id === 'tiny')!
-    // under the old locked-odds engine this bet returned ₹5700.95
+    // under the old locked-odds engine this bet returned 5700.95 CR
     expect(tiny.amount).toBeLessThan(3)
   })
 
@@ -288,7 +288,7 @@ describe('settleMarket', () => {
       { early: 0,     late: 10000, lose: 1,   seed: 0 },   // all late
       { early: 10000, late: 0,    lose: 1,    seed: 0 },   // all early
       { early: 495,   late: 495,  lose: 10,   seed: 0 },   // guarantee binds hard
-      { early: 1,     late: 1,    lose: 0.01, seed: 0 },   // sub-rupee pool
+      { early: 1,     late: 1,    lose: 0.01, seed: 0 },   // sub-unit pool
     ]
 
     for (const c of cases) {

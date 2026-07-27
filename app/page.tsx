@@ -32,7 +32,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-ink">BCL Tournament</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-ink">PrimeStake</h1>
         <p className="text-slate text-sm mt-1">Select a sport to view matches and place bets</p>
       </div>
 

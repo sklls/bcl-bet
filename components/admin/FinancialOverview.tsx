@@ -95,7 +95,7 @@ export default function FinancialOverview({
             disabled={loading !== null}
             className="px-3 py-1.5 text-xs font-medium bg-raised hover:bg-rail text-slate border border-rail rounded-lg transition-colors disabled:opacity-50"
           >
-            {loading === 'cash' ? 'Resetting…' : 'Reset Cash Counter'}
+            {loading === 'cash' ? 'Resetting…' : 'Reset Issued Counter'}
           </button>
           <button
             onClick={() => handleReset('season')}
@@ -156,7 +156,7 @@ export default function FinancialOverview({
       )}
 
       <div className="mt-3 text-xs text-slate space-y-0.5">
-        <p><span className="text-slate">Reset Cash Counter</span> — clears top-up records only. Wallets &amp; bets untouched.</p>
+        <p><span className="text-slate">Reset Issued Counter</span> — clears top-up records only. Wallets &amp; bets untouched.</p>
         <p><span className="text-crimson-light">Season Reset</span> — deletes all matches, teams, transactions; zeros all wallets.</p>
       </div>
     </div>

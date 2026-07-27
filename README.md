@@ -2,9 +2,9 @@
 
 > *Luck is for the Unprepared.*
 
-A free-to-play, multi-sport prediction game built for the **BCL (Business Cricket League)** tournament. Players spend **in-game credits (CR)** on pari-mutuel match markets or build a fantasy XI, then compete on a leaderboard — all in real time.
+A free-to-play, multi-sport prediction game built for a private tournament. Players spend **in-game credits (CR)** on pari-mutuel match markets or build a fantasy XI, then compete on a leaderboard — all in real time.
 
-> **No real money.** Credits have no cash value. They cannot be purchased, sold, withdrawn, or exchanged for money or anything else of value. An admin issues credits to players; that is the only way credits enter the game. Everything a player "wins" is credits returning to their in-game balance. This is a scoring system for a private tournament, not a gambling product.
+> **Credits are a scoring unit.** They are issued by an admin for use inside the tournament, cannot be purchased, and cannot be transferred out of the app or exchanged for anything outside it. Everything a player "wins" is credits returning to their in-game balance. PrimeStake is a way of keeping score in a private tournament.
 
 ---
 
@@ -138,7 +138,7 @@ bcl-bet/
 
 ### Functions
 
-Every money-moving function is `SECURITY DEFINER`, and every one is `REVOKE`d from `PUBLIC`/`anon`/`authenticated` and granted only to `service_role`.
+Every credit-moving function is `SECURITY DEFINER`, and every one is `REVOKE`d from `PUBLIC`/`anon`/`authenticated` and granted only to `service_role`.
 
 - **`place_bet()`** — atomic bet placement with balance deduction and pool update
 - **`apply_settlement()`** — one-time market settlement, guarded by a row lock
@@ -309,4 +309,4 @@ Deployed on **Vercel**. A cron job runs daily at midnight to sync live scores an
 
 ## License
 
-Private — BCL internal use only.
+Private — internal use only.
