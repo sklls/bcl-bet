@@ -4,7 +4,7 @@
 
 > **PrimeStake** is a pari-mutuel, multi-sport prediction game built for a private multi-sport tournament. Participants spend in-game credits (CR) on match outcomes, top scorers, live events, and fantasy contests. Admins manage matches, markets, contests, and credit balances; players browse, predict, and track their results.
 
-**Live URL:** https://bcl-bet-app-1.vercel.app
+**Live URL:** https://bcl-bet.vercel.app
 **Repository:** https://github.com/sklls/bcl-bet
 **Stack:** Next.js 14 · Supabase (PostgreSQL + Auth) · Tailwind CSS · Vercel
 
@@ -846,7 +846,7 @@ Go to `/dashboard`:
 
 ### Vercel (Production)
 
-The app is deployed on Vercel at `bcl-bet-app-1.vercel.app`.
+The app is deployed on Vercel at `bcl-bet.vercel.app`.
 
 **Environment variables** must be set in Vercel dashboard:
 - `NEXT_PUBLIC_SUPABASE_URL`
